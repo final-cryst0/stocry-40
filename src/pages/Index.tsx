@@ -3,35 +3,21 @@ import { useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CryptoCard } from "@/components/CryptoCard";
 import { CryptoDetail } from "@/components/CryptoDetail";
-
-// Temporary data for demonstration
-const cryptoData = [
-  {
-    symbol: "BTC",
-    name: "Bitcoin",
-    price: 4582947.23,
-    change: -2.5,
-    marketCap: 8923456789.12,
-  },
-  {
-    symbol: "ETH",
-    name: "Ethereum",
-    price: 234567.89,
-    change: 1.8,
-    marketCap: 4567890123.45,
-  },
-  {
-    symbol: "BNB",
-    name: "Binance Coin",
-    price: 34567.89,
-    change: -0.5,
-    marketCap: 2345678901.23,
-  },
-  // Add more cryptocurrencies as needed
-];
+import { useMarketData } from "@/services/cryptoApi";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const [selectedCrypto, setSelectedCrypto] = useState<string | null>(null);
+  const { data: cryptoData, isLoading, error } = useMarketData();
+  const { toast } = useToast();
+
+  if (error) {
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "Failed to fetch crypto data. Please try again later.",
+    });
+  }
 
   return (
     <div className="min-h-screen p-4 md:p-8">
@@ -48,13 +34,32 @@ const Index = () => {
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {cryptoData.map((crypto) => (
-              <CryptoCard
-                key={crypto.symbol}
-                {...crypto}
-                onClick={() => setSelectedCrypto(crypto.symbol)}
-              />
-            ))}
+            {isLoading ? (
+              Array.from({ length: 6 }).map((_, index) => (
+                <CryptoCard
+                  key={index}
+                  symbol=""
+                  name=""
+                  price={0}
+                  change={0}
+                  marketCap={0}
+                  onClick={() => {}}
+                  isLoading={true}
+                />
+              ))
+            ) : (
+              cryptoData?.map((crypto) => (
+                <CryptoCard
+                  key={crypto.id}
+                  symbol={crypto.symbol}
+                  name={crypto.name}
+                  price={crypto.current_price}
+                  change={crypto.price_change_percentage_24h}
+                  marketCap={crypto.market_cap}
+                  onClick={() => setSelectedCrypto(crypto.id)}
+                />
+              ))
+            )}
           </div>
         )}
       </div>

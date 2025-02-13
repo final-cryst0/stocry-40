@@ -23,11 +23,13 @@ interface MarketData {
   current_price: number;
   price_change_percentage_24h: number;
   market_cap: number;
+  circulating_supply: number;
+  total_volume: number;
 }
 
 const fetchMarketData = async (): Promise<MarketData[]> => {
   const response = await fetch(
-    "https://api.coingecko.com/api/v3/coins/markets?vs_currency=inr&order=market_cap_desc&per_page=10&page=1&sparkline=false"
+    "https://api.coingecko.com/api/v3/coins/markets?vs_currency=inr&order=market_cap_desc&per_page=20&page=1&sparkline=false"
   );
   
   if (!response.ok) {
@@ -55,4 +57,25 @@ export const fetchCryptoDetail = async (id: string): Promise<CryptoData> => {
   }
   
   return response.json();
+};
+
+// Fetch stock data (simulated for now as we need a different API for real stock data)
+export const useStockData = () => {
+  return useQuery({
+    queryKey: ["stockData"],
+    queryFn: async () => {
+      // This would be replaced with actual stock API call
+      return Array.from({ length: 20 }).map((_, i) => ({
+        id: `stock-${i}`,
+        symbol: ["AAPL", "GOOGL", "MSFT", "AMZN", "TSLA"][i % 5],
+        name: ["Apple", "Google", "Microsoft", "Amazon", "Tesla"][i % 5],
+        current_price: Math.random() * 1000,
+        price_change_percentage_24h: (Math.random() - 0.5) * 10,
+        market_cap: Math.random() * 1000000000000,
+        circulating_supply: Math.random() * 1000000000,
+        total_volume: Math.random() * 10000000000,
+      }));
+    },
+    refetchInterval: 30000,
+  });
 };

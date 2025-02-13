@@ -1,5 +1,5 @@
 
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, Heart } from "lucide-react";
 
 interface CryptoCardProps {
   symbol: string;
@@ -9,6 +9,8 @@ interface CryptoCardProps {
   marketCap: number;
   onClick: () => void;
   isLoading?: boolean;
+  isFavorite?: boolean;
+  onFavoriteClick?: (e: React.MouseEvent) => void;
 }
 
 export function CryptoCard({
@@ -19,6 +21,8 @@ export function CryptoCard({
   marketCap,
   onClick,
   isLoading = false,
+  isFavorite = false,
+  onFavoriteClick,
 }: CryptoCardProps) {
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat("en-IN", {
@@ -30,7 +34,7 @@ export function CryptoCard({
 
   if (isLoading) {
     return (
-      <div className="neo-brutal-card p-4 animate-pulse">
+      <div className="p-4 rounded-lg border border-border/50 bg-card/50 animate-pulse">
         <div className="flex justify-between items-start mb-4">
           <div>
             <div className="h-6 w-16 bg-muted rounded" />
@@ -48,7 +52,7 @@ export function CryptoCard({
 
   return (
     <div
-      className="neo-brutal-card p-4 cursor-pointer"
+      className="relative p-4 rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all cursor-pointer"
       onClick={onClick}
     >
       <div className="flex justify-between items-start mb-4">
@@ -56,16 +60,31 @@ export function CryptoCard({
           <h3 className="text-lg font-bold">{symbol.toUpperCase()}</h3>
           <p className="text-sm text-muted-foreground">{name}</p>
         </div>
-        <div className={`flex items-center ${change >= 0 ? "text-accent" : "text-destructive"}`}>
-          {change >= 0 ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
-          <span className="ml-1">{Math.abs(change).toFixed(2)}%</span>
-        </div>
+        {onFavoriteClick && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onFavoriteClick(e);
+            }}
+            className="p-1 hover:bg-muted rounded-full transition-colors"
+          >
+            <Heart 
+              className={`h-4 w-4 ${isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
+            />
+          </button>
+        )}
       </div>
       <div className="space-y-2">
         <p className="text-2xl font-bold">{formatNumber(price)}</p>
-        <p className="text-sm text-muted-foreground">
-          Market Cap: {formatNumber(marketCap)}
-        </p>
+        <div className="flex justify-between items-center">
+          <div className={`flex items-center ${change >= 0 ? "text-green-500" : "text-red-500"}`}>
+            {change >= 0 ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
+            <span className="ml-1">{Math.abs(change).toFixed(2)}%</span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            MCap: {formatNumber(marketCap)}
+          </p>
+        </div>
       </div>
     </div>
   );

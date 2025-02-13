@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CryptoDetail } from "@/components/CryptoDetail";
+import { StockDetail } from "@/components/StockDetail";
 import { useMarketData, useStockData } from "@/services/cryptoApi";
 import { useToast } from "@/components/ui/use-toast";
 import { Heart, Sparkles, TrendingUp, DollarSign, BarChart3, Briefcase } from "lucide-react";
@@ -124,7 +125,7 @@ const Index = () => {
             onBack={() => setSelectedCrypto(null)}
           />
         ) : selectedStock ? (
-          <CryptoDetail
+          <StockDetail
             symbol={selectedStock}
             name={selectedStockName}
             onBack={() => setSelectedStock(null)}

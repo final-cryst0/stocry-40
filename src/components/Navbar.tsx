@@ -5,13 +5,20 @@ import { ThemeToggle } from "./ThemeToggle";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useState } from "react";
+import { useMarketStore } from "@/stores/marketStore";
 
-export function Navbar() {
-  const [currency, setCurrency] = useState<"INR" | "USD">("INR");
+interface NavbarProps {
+  onCurrencyChange?: (currency: 'INR' | 'USD') => void;
+}
+
+export function Navbar({ onCurrencyChange }: NavbarProps) {
   const [showSearch, setShowSearch] = useState(false);
+  const { currency } = useMarketStore();
 
   const toggleCurrency = () => {
-    setCurrency(prev => prev === "INR" ? "USD" : "INR");
+    if (onCurrencyChange) {
+      onCurrencyChange(currency === "INR" ? "USD" : "INR");
+    }
   };
 
   return (

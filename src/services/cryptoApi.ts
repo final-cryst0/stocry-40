@@ -1,5 +1,5 @@
-
 import { useQuery } from "@tanstack/react-query";
+import { useMarketStore } from "@/stores/marketStore";
 
 interface CryptoData {
   id: string;
@@ -38,15 +38,31 @@ interface NewsItem {
   thumbnail?: string;
 }
 
-const fetchMarketData = async (): Promise<MarketData[]> => {
+interface HistoricalData {
+  prices: [number, number][];  // [timestamp, price]
+}
+
+const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> => {
   const response = await fetch(
-    "https://api.coingecko.com/api/v3/coins/markets?vs_currency=inr&order=market_cap_desc&per_page=20&page=1&sparkline=false"
+    `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${currency.toLowerCase()}&order=market_cap_desc&per_page=20&page=1&sparkline=false`
   );
   
   if (!response.ok) {
     throw new Error("Failed to fetch market data");
   }
   
+  return response.json();
+};
+
+const fetchHistoricalData = async (id: string, currency: string = 'inr', days: number = 7): Promise<HistoricalData> => {
+  const response = await fetch(
+    `https://api.coingecko.com/api/v3/coins/${id}/market_chart?vs_currency=${currency.toLowerCase()}&days=${days}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch historical data");
+  }
+
   return response.json();
 };
 
@@ -76,10 +92,20 @@ const fetchMarketNews = async (): Promise<NewsItem[]> => {
 };
 
 export const useMarketData = () => {
+  const { currency } = useMarketStore();
   return useQuery({
-    queryKey: ["marketData"],
-    queryFn: fetchMarketData,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    queryKey: ["marketData", currency],
+    queryFn: () => fetchMarketData(currency),
+    refetchInterval: 30000,
+  });
+};
+
+export const useHistoricalData = (id: string, days: number = 7) => {
+  const { currency } = useMarketStore();
+  return useQuery({
+    queryKey: ["historicalData", id, currency, days],
+    queryFn: () => fetchHistoricalData(id, currency, days),
+    enabled: !!id,
   });
 };
 

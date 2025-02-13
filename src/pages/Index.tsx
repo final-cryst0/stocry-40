@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -16,12 +15,33 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart } from "lucide-react";
+import { useMarketStore } from "@/stores/marketStore";
 
 const Index = () => {
   const [selectedCrypto, setSelectedCrypto] = useState<string | null>(null);
+  const [selectedCryptoName, setSelectedCryptoName] = useState<string>("");
   const { data: cryptoData, isLoading: cryptoLoading, error: cryptoError } = useMarketData();
   const { data: stockData, isLoading: stockLoading, error: stockError } = useStockData();
   const { toast } = useToast();
+  
+  const { 
+    favorites, 
+    addFavorite, 
+    removeFavorite,
+    currency,
+    setCurrency 
+  } = useMarketStore();
+
+  const handleFavoriteClick = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (favorites.includes(id)) {
+      removeFavorite(id);
+      toast({ description: "Removed from favorites" });
+    } else {
+      addFavorite(id);
+      toast({ description: "Added to favorites" });
+    }
+  };
 
   if (cryptoError || stockError) {
     toast({
@@ -34,14 +54,14 @@ const Index = () => {
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
-      currency: "INR",
+      currency: currency,
       maximumFractionDigits: 2,
     }).format(num);
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      <Navbar onCurrencyChange={setCurrency} />
       <main className="flex-1 container mx-auto px-4 py-8">
         <header className="mb-8">
           <h1 className="text-3xl font-bold">Explore the Markets</h1>
@@ -53,6 +73,7 @@ const Index = () => {
         {selectedCrypto ? (
           <CryptoDetail
             symbol={selectedCrypto}
+            name={selectedCryptoName}
             onBack={() => setSelectedCrypto(null)}
           />
         ) : (
@@ -67,12 +88,12 @@ const Index = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Favorite</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Price</TableHead>
                       <TableHead>24h Change</TableHead>
                       <TableHead className="hidden md:table-cell">Market Cap</TableHead>
                       <TableHead className="hidden md:table-cell">Volume (24h)</TableHead>
-                      <TableHead className="text-right">Favorite</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -103,8 +124,19 @@ const Index = () => {
                           <TableRow
                             key={crypto.id}
                             className="cursor-pointer"
-                            onClick={() => setSelectedCrypto(crypto.id)}
+                            onClick={() => {
+                              setSelectedCrypto(crypto.id);
+                              setSelectedCryptoName(crypto.name);
+                            }}
                           >
+                            <TableCell>
+                              <Heart 
+                                className={`h-4 w-4 hover:text-red-500 transition-colors ${
+                                  favorites.includes(crypto.id) ? "fill-current text-red-500" : ""
+                                }`}
+                                onClick={(e) => handleFavoriteClick(e, crypto.id)}
+                              />
+                            </TableCell>
                             <TableCell className="font-medium">
                               {crypto.name} ({crypto.symbol.toUpperCase()})
                             </TableCell>
@@ -119,9 +151,6 @@ const Index = () => {
                             </TableCell>
                             <TableCell className="hidden md:table-cell">
                               {formatNumber(crypto.total_volume)}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Heart className="ml-auto h-4 w-4 hover:fill-current hover:text-red-500 transition-colors" />
                             </TableCell>
                           </TableRow>
                         ))}

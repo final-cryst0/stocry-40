@@ -1,11 +1,12 @@
-import { ArrowLeft, Sparkles, TrendingUp, DollarSign, BarChart3, Globe, Info } from "lucide-react";
+
+import { ArrowLeft } from "lucide-react";
 import { useHistoricalData } from "@/services/cryptoApi";
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 import { useState } from "react";
-import { Button } from "./ui/button";
 import { useToast } from "./ui/use-toast";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useMarketStore } from "@/stores/marketStore";
+import { TimeframeSelector } from "./crypto/TimeframeSelector";
+import { CryptoPriceChart } from "./crypto/CryptoPriceChart";
+import { CryptoStats } from "./crypto/CryptoStats";
 
 interface CryptoDetailProps {
   symbol: string;
@@ -67,6 +68,7 @@ export function CryptoDetail({ symbol, name, onBack }: CryptoDetailProps) {
 
   const { change, percentage } = calculatePriceChange();
   const isPriceUp = percentage >= 0;
+  const currentPrice = chartData && chartData[chartData.length - 1]?.price || 0;
 
   return (
     <div className="space-y-6">
@@ -75,211 +77,30 @@ export function CryptoDetail({ symbol, name, onBack }: CryptoDetailProps) {
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </button>
-        <div className="flex gap-2">
-          <Button
-            variant={timeframe === 1 ? "default" : "outline"}
-            onClick={() => setTimeframe(1)}
-          >
-            1D
-          </Button>
-          <Button
-            variant={timeframe === 7 ? "default" : "outline"}
-            onClick={() => setTimeframe(7)}
-          >
-            7D
-          </Button>
-          <Button
-            variant={timeframe === 30 ? "default" : "outline"}
-            onClick={() => setTimeframe(30)}
-          >
-            1M
-          </Button>
-          <Button
-            variant={timeframe === 365 ? "default" : "outline"}
-            onClick={() => setTimeframe(365)}
-          >
-            1Y
-          </Button>
-        </div>
+        <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="neo-brutal-card p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">{name} Price Chart</h2>
-            <div className="text-right">
-              <p className="text-lg font-semibold">
-                {chartData && formatCurrency(chartData[chartData.length - 1]?.price || 0)}
-              </p>
-              <p className={`text-sm ${isPriceUp ? 'text-green-500' : 'text-red-500'}`}>
-                {isPriceUp ? '+' : ''}{percentage.toFixed(2)}%
-              </p>
-            </div>
-          </div>
-          {isLoading ? (
-            <div className="h-[300px] flex items-center justify-center">
-              Loading...
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2c2c2c" opacity={0.1} />
-                <XAxis 
-                  dataKey="date" 
-                  tickFormatter={formatDate}
-                  stroke="#6b7280"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis 
-                  tickFormatter={formatCurrency}
-                  stroke="#6b7280"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  width={80}
-                />
-                <Tooltip 
-                  labelFormatter={formatDate}
-                  formatter={(value: number) => [formatCurrency(value), 'Price']}
-                  contentStyle={{
-                    backgroundColor: 'rgba(17, 24, 39, 0.8)',
-                    borderRadius: '8px',
-                    border: '1px solid #374151',
-                    color: '#fff',
-                  }}
-                  itemStyle={{ color: '#fff' }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="price"
-                  stroke={isPriceUp ? '#10B981' : '#EF4444'}
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4, fill: isPriceUp ? '#10B981' : '#EF4444' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+        <CryptoPriceChart
+          chartData={chartData}
+          formatDate={formatDate}
+          formatCurrency={formatCurrency}
+          isPriceUp={isPriceUp}
+          percentage={percentage}
+          name={name}
+          isLoading={isLoading}
+        />
 
-        <div className="space-y-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
-                {timeframe}D Statistics
-              </CardTitle>
-              <Info className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Current Price</p>
-                  <p className="text-lg font-bold">
-                    {chartData && formatCurrency(chartData[chartData.length - 1]?.price || 0)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Price Change</p>
-                  <p className={`text-lg font-bold ${isPriceUp ? 'text-green-500' : 'text-red-500'}`}>
-                    {formatCurrency(Math.abs(change))} ({percentage.toFixed(2)}%)
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Lowest Price</p>
-                  <p className="text-lg font-bold">
-                    {chartData && formatCurrency(Math.min(...chartData.map(d => d.price)))}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Highest Price</p>
-                  <p className="text-lg font-bold">
-                    {chartData && formatCurrency(Math.max(...chartData.map(d => d.price)))}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Market Overview</CardTitle>
-              <Info className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Market Cap</p>
-                  <p className="text-lg font-bold">$952.4B</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Volume (24h)</p>
-                  <p className="text-lg font-bold">$28.4B</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Circulating Supply</p>
-                  <p className="text-lg font-bold">19.6M</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Max Supply</p>
-                  <p className="text-lg font-bold">21.0M</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Price Statistics</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">24h Low</span>
-                  <span className="font-medium">$48,637.21</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">24h High</span>
-                  <span className="font-medium">$52,142.95</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">7d Change</span>
-                  <span className="font-medium text-green-500">+5.23%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Market Indicators</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Fear & Greed Index</span>
-                  <span className="font-medium">75 (Greed)</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Volatility</span>
-                  <span className="font-medium">Medium</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Dominance</span>
-                  <span className="font-medium">42.3%</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Button className="w-full" onClick={handleAIAnalysis}>
-            <Sparkles className="w-4 h-4 mr-2" />
-            Generate AI Analysis
-          </Button>
-        </div>
+        <CryptoStats
+          timeframe={timeframe}
+          currentPrice={formatCurrency(currentPrice)}
+          priceChange={formatCurrency(Math.abs(change))}
+          percentage={percentage}
+          lowestPrice={formatCurrency(Math.min(...(chartData?.map(d => d.price) || [])))}
+          highestPrice={formatCurrency(Math.max(...(chartData?.map(d => d.price) || [])))}
+          isPriceUp={isPriceUp}
+          onAIAnalysis={handleAIAnalysis}
+        />
       </div>
     </div>
   );

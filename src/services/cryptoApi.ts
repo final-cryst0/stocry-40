@@ -1,6 +1,130 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMarketStore } from "@/stores/marketStore";
-import { useToast } from "@/hooks/use-toast";
+
+const BINANCE_API_BASE = 'https://api.binance.com/api/v3';
+const NSE_STOCKS_BASE = 'https://www.nseindia.com/api/v1';
+
+interface MarketData {
+  id: string;
+  symbol: string;
+  name: string;
+  current_price: number;
+  price_change_percentage_24h: number;
+  market_cap: number;
+  circulating_supply: number;
+  total_volume: number;
+  market_cap_rank: number;
+}
+
+// Top Indian stocks
+const INDIAN_STOCKS = [
+  { symbol: 'RELIANCE', name: 'Reliance Industries' },
+  { symbol: 'TCS', name: 'Tata Consultancy Services' },
+  { symbol: 'HDFCBANK', name: 'HDFC Bank' },
+  { symbol: 'INFY', name: 'Infosys' },
+  { symbol: 'HINDUNILVR', name: 'Hindustan Unilever' },
+  { symbol: 'ICICIBANK', name: 'ICICI Bank' },
+  { symbol: 'SBIN', name: 'State Bank of India' },
+  { symbol: 'BHARTIARTL', name: 'Bharti Airtel' },
+  { symbol: 'ITC', name: 'ITC' },
+  { symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank' }
+];
+
+// Top crypto pairs traded in INR
+const CRYPTO_PAIRS = [
+  { symbol: 'BTCINR', name: 'Bitcoin' },
+  { symbol: 'ETHINR', name: 'Ethereum' },
+  { symbol: 'BNBINR', name: 'Binance Coin' },
+  { symbol: 'XRPINR', name: 'Ripple' },
+  { symbol: 'SOLINR', name: 'Solana' },
+  { symbol: 'ADAINR', name: 'Cardano' },
+  { symbol: 'DOTINR', name: 'Polkadot' },
+  { symbol: 'MATICINR', name: 'Polygon' },
+  { symbol: 'DOGEINR', name: 'Dogecoin' },
+  { symbol: 'SHIBINR', name: 'Shiba Inu' }
+];
+
+const fetchBinancePrice = async (symbol: string) => {
+  try {
+    const response = await fetch(`${BINANCE_API_BASE}/ticker/24hr?symbol=${symbol}`);
+    const data = await response.json();
+    return {
+      current_price: parseFloat(data.lastPrice),
+      price_change_percentage_24h: parseFloat(data.priceChangePercent),
+      total_volume: parseFloat(data.volume),
+      high_24h: parseFloat(data.highPrice),
+      low_24h: parseFloat(data.lowPrice)
+    };
+  } catch (error) {
+    console.error(`Error fetching price for ${symbol}:`, error);
+    return null;
+  }
+};
+
+const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> => {
+  try {
+    const cryptoPromises = CRYPTO_PAIRS.map(async (pair) => {
+      const priceData = await fetchBinancePrice(pair.symbol);
+      if (!priceData) return null;
+
+      return {
+        id: pair.symbol.toLowerCase(),
+        symbol: pair.symbol,
+        name: pair.name,
+        current_price: priceData.current_price,
+        price_change_percentage_24h: priceData.price_change_percentage_24h,
+        market_cap: priceData.total_volume * priceData.current_price,
+        circulating_supply: 0, // Not available from basic Binance API
+        total_volume: priceData.total_volume,
+        market_cap_rank: 0
+      };
+    });
+
+    const results = await Promise.all(cryptoPromises);
+    return results.filter((result): result is MarketData => result !== null);
+  } catch (error) {
+    console.error('Error fetching market data:', error);
+    return [];
+  }
+};
+
+const fetchStockData = async (currency: string = 'inr'): Promise<MarketData[]> => {
+  // Since direct NSE API access requires authentication, we'll use TradingView widget
+  // for real-time data display. For now, return mock data
+  return INDIAN_STOCKS.map((stock, index) => ({
+    id: stock.symbol.toLowerCase(),
+    symbol: stock.symbol,
+    name: stock.name,
+    current_price: 0,
+    price_change_percentage_24h: 0,
+    market_cap: 0,
+    circulating_supply: 0,
+    total_volume: 0,
+    market_cap_rank: index + 1
+  }));
+};
+
+export const useMarketData = () => {
+  const { currency } = useMarketStore();
+  return useQuery({
+    queryKey: ["marketData", currency],
+    queryFn: () => fetchMarketData(currency),
+    refetchInterval: 10000, // Refresh every 10 seconds
+    staleTime: 5000,
+    retry: 1,
+  });
+};
+
+export const useStockData = () => {
+  const { currency } = useMarketStore();
+  return useQuery({
+    queryKey: ["stockData", currency],
+    queryFn: () => fetchStockData(currency),
+    refetchInterval: 10000,
+    staleTime: 5000,
+    retry: 1,
+  });
+};
 
 interface CryptoData {
   id: string;
@@ -15,18 +139,6 @@ interface CryptoData {
       inr: number;
     };
   };
-}
-
-interface MarketData {
-  id: string;
-  symbol: string;
-  name: string;
-  current_price: number;
-  price_change_percentage_24h: number;
-  market_cap: number;
-  circulating_supply: number;
-  total_volume: number;
-  market_cap_rank: number;
 }
 
 interface NewsItem {
@@ -127,43 +239,6 @@ const fetchHistoricalData = async (id: string, currency: string = 'inr', days: n
   }
 };
 
-const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> => {
-  if (MOCK_MODE) {
-    return generateMockMarketData(currency);
-  }
-
-  const url = `${API_BASE_URL}/coins/markets?vs_currency=${currency.toLowerCase()}&order=market_cap_desc&per_page=20&page=1&sparkline=false`;
-  
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.map((item: any) => ({
-      id: item.id,
-      symbol: item.symbol,
-      name: item.name,
-      current_price: item.current_price,
-      price_change_percentage_24h: item.price_change_percentage_24h,
-      market_cap: item.market_cap,
-      circulating_supply: item.circulating_supply,
-      total_volume: item.total_volume,
-      market_cap_rank: item.market_cap_rank
-    }));
-  } catch (error) {
-    console.error('Error fetching market data:', error);
-    return generateMockMarketData(currency);
-  }
-};
-
 const fetchMarketNews = async (): Promise<NewsItem[]> => {
   try {
     const response = await fetch(
@@ -190,52 +265,4 @@ const fetchMarketNews = async (): Promise<NewsItem[]> => {
     console.error('Error fetching news:', error);
     return [];
   }
-};
-
-const fetchStockData = async (currency: string = 'usd'): Promise<MarketData[]> => {
-  return generateMockMarketData(currency);
-};
-
-export const useMarketData = () => {
-  const { currency } = useMarketStore();
-  return useQuery({
-    queryKey: ["marketData", currency],
-    queryFn: () => fetchMarketData(currency),
-    refetchInterval: 30000,
-    staleTime: 30000,
-    retry: 1,
-  });
-};
-
-export const useHistoricalData = (id: string, days: number = 7) => {
-  const { currency } = useMarketStore();
-  return useQuery({
-    queryKey: ["historicalData", id, currency, days],
-    queryFn: () => fetchHistoricalData(id, currency, days),
-    enabled: !!id,
-    staleTime: 300000,
-    retry: 1,
-    refetchOnWindowFocus: false,
-  });
-};
-
-export const useNewsData = () => {
-  return useQuery({
-    queryKey: ["newsData"],
-    queryFn: fetchMarketNews,
-    staleTime: 300000,
-    retry: 1,
-    refetchOnWindowFocus: false,
-  });
-};
-
-export const useStockData = () => {
-  const { currency } = useMarketStore();
-  return useQuery({
-    queryKey: ["stockData", currency],
-    queryFn: () => fetchStockData(currency),
-    refetchInterval: 30000,
-    staleTime: 30000,
-    retry: 1,
-  });
 };

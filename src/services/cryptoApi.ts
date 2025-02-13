@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useMarketStore } from "@/stores/marketStore";
 import { useToast } from "@/hooks/use-toast";
@@ -44,80 +45,95 @@ interface HistoricalData {
 }
 
 const API_BASE_URL = 'https://api.coingecko.com/api/v3';
+const MOCK_MODE = true; // Set to true to use mock data during development
 
-const createHeaders = () => {
-  return {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
-  };
+const generateMockHistoricalData = (days: number): HistoricalData => {
+  const now = Date.now();
+  const interval = (days * 24 * 60 * 60 * 1000) / 100; // 100 data points
+  const basePrice = 45000 + Math.random() * 5000;
+  
+  const prices: [number, number][] = Array.from({ length: 100 }).map((_, i) => {
+    const timestamp = now - (days * 24 * 60 * 60 * 1000) + (i * interval);
+    const randomChange = (Math.random() - 0.5) * 1000;
+    const price = basePrice + randomChange;
+    return [timestamp, price];
+  });
+  
+  return { prices };
 };
 
-const handleResponse = async (response: Response) => {
-  if (response.status === 429) {
-    throw new Error("Rate limit exceeded. Please try again later.");
-  }
+const generateMockMarketData = (): MarketData[] => {
+  const cryptos = [
+    { symbol: 'BTC', name: 'Bitcoin' },
+    { symbol: 'ETH', name: 'Ethereum' },
+    { symbol: 'USDT', name: 'Tether' },
+    { symbol: 'BNB', name: 'Binance Coin' },
+    { symbol: 'SOL', name: 'Solana' }
+  ];
   
-  if (!response.ok) {
-    if (response.status === 404) {
-      throw new Error("Resource not found");
-    }
-    throw new Error(`API Error: ${response.status}`);
-  }
-  
-  return response.json();
+  return cryptos.map((crypto, i) => ({
+    id: crypto.symbol.toLowerCase(),
+    symbol: crypto.symbol,
+    name: crypto.name,
+    current_price: Math.random() * 50000,
+    price_change_percentage_24h: (Math.random() - 0.5) * 10,
+    market_cap: Math.random() * 1000000000000,
+    circulating_supply: Math.random() * 1000000000,
+    total_volume: Math.random() * 10000000000,
+  }));
 };
 
-const fetchWithRetry = async (url: string, options: RequestInit, retries = 3) => {
-  for (let i = 0; i < retries; i++) {
-    try {
-      const response = await fetch(url, options);
-      return await handleResponse(response);
-    } catch (error) {
-      if (i === retries - 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+const fetchHistoricalData = async (id: string, currency: string = 'inr', days: number = 7): Promise<HistoricalData> => {
+  if (MOCK_MODE) {
+    return generateMockHistoricalData(days);
+  }
+
+  const url = `${API_BASE_URL}/coins/${id}/market_chart?vs_currency=${currency.toLowerCase()}&days=${days}`;
+  
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
     }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching historical data:', error);
+    return generateMockHistoricalData(days);
   }
 };
 
 const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> => {
+  if (MOCK_MODE) {
+    return generateMockMarketData();
+  }
+
   const url = `${API_BASE_URL}/coins/markets?vs_currency=${currency.toLowerCase()}&order=market_cap_desc&per_page=20&page=1&sparkline=false`;
   
   try {
-    return await fetchWithRetry(url, {
+    const response = await fetch(url, {
       method: 'GET',
-      headers: createHeaders(),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
     });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
+    }
+
+    return await response.json();
   } catch (error) {
     console.error('Error fetching market data:', error);
-    return Array.from({ length: 5 }).map((_, i) => ({
-      id: `mock-${i}`,
-      symbol: ['BTC', 'ETH', 'USDT', 'BNB', 'SOL'][i],
-      name: ['Bitcoin', 'Ethereum', 'Tether', 'Binance Coin', 'Solana'][i],
-      current_price: Math.random() * 50000,
-      price_change_percentage_24h: (Math.random() - 0.5) * 10,
-      market_cap: Math.random() * 1000000000000,
-      circulating_supply: Math.random() * 1000000000,
-      total_volume: Math.random() * 10000000000,
-    }));
-  }
-};
-
-const fetchHistoricalData = async (id: string, currency: string = 'inr', days: number = 7): Promise<HistoricalData> => {
-  const url = `${API_BASE_URL}/coins/${id}/market_chart?vs_currency=${currency.toLowerCase()}&days=${days}`;
-  
-  try {
-    return await fetchWithRetry(url, {
-      method: 'GET',
-      headers: createHeaders(),
-    });
-  } catch (error) {
-    console.error('Error fetching historical data:', error);
-    const mockPrices: [number, number][] = Array.from({ length: days * 24 }).map((_, i) => [
-      Date.now() - (days * 24 * 60 * 60 * 1000) + (i * 60 * 60 * 1000),
-      Math.random() * 50000
-    ]);
-    return { prices: mockPrices };
+    return generateMockMarketData();
   }
 };
 
@@ -155,8 +171,8 @@ export const useMarketData = () => {
     queryKey: ["marketData", currency],
     queryFn: () => fetchMarketData(currency),
     refetchInterval: 30000,
-    staleTime: 10000,
-    retry: 3,
+    staleTime: 30000,
+    retry: 1,
   });
 };
 
@@ -167,31 +183,18 @@ export const useHistoricalData = (id: string, days: number = 7) => {
     queryFn: () => fetchHistoricalData(id, currency, days),
     enabled: !!id,
     staleTime: 300000, // 5 minutes
-    retry: 3,
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
-};
-
-export const fetchCryptoDetail = async (id: string): Promise<CryptoData> => {
-  const url = `${API_BASE_URL}/coins/${id}?localization=false&tickers=false&community_data=false&developer_data=false`;
-  
-  try {
-    return await fetchWithRetry(url, {
-      method: 'GET',
-      headers: createHeaders(),
-    });
-  } catch (error) {
-    console.error('Error fetching crypto details:', error);
-    throw error;
-  }
 };
 
 export const useNewsData = () => {
   return useQuery({
     queryKey: ["newsData"],
     queryFn: fetchMarketNews,
-    refetchInterval: 300000, // Refetch every 5 minutes
-    staleTime: 60000, // Consider data fresh for 1 minute
-    retry: 3,
+    staleTime: 300000, // 5 minutes
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 };
 

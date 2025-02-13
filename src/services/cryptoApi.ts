@@ -45,6 +45,7 @@ interface HistoricalData {
 }
 
 const API_BASE_URL = 'https://api.coingecko.com/api/v3';
+const FINNHUB_API_KEY = 'sandbox_chj7pc1r01qj53s8k50gchj7pc1r01qj53s8k510'; // Free sandbox key
 const MOCK_MODE = false; // Set to false to use real API
 
 const generateMockHistoricalData = (days: number, currency: string): HistoricalData => {
@@ -195,50 +196,53 @@ const fetchStockData = async (currency: string = 'usd') => {
   const multiplier = currency.toLowerCase() === 'usd' ? 1 : 82;
   const stocks = [
     'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 
-    'META', 'TSLA', 'BRK-B', 'UNH', 'JNJ',
+    'META', 'TSLA', 'BRK.B', 'UNH', 'JNJ',
     'JPM', 'V', 'PG', 'MA', 'HD',
     'CVX', 'MRK', 'PEP', 'BAC', 'KO'
   ];
   
   try {
-    const symbols = stocks.join(',');
-    const response = await fetch(
-      `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`
-    );
+    const stockPromises = stocks.map(async (symbol, index) => {
+      try {
+        const response = await fetch(
+          `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`
+        );
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch stock data');
+        if (!response.ok) {
+          throw new Error('Failed to fetch stock data');
+        }
+
+        const data = await response.json();
+        
+        return {
+          id: `stock-${symbol}`,
+          symbol: symbol,
+          name: symbol, // Simplified for sandbox mode
+          current_price: data.c * multiplier,
+          price_change_percentage_24h: ((data.c - data.pc) / data.pc) * 100,
+          market_cap: data.c * 1000000 * multiplier, // Simplified market cap
+          circulating_supply: 1000000, // Placeholder
+          total_volume: data.v * data.c * multiplier,
+          market_cap_rank: index + 1
+        };
+      } catch (error) {
+        console.error(`Error fetching ${symbol}:`, error);
+        return null;
+      }
+    });
+
+    const results = await Promise.all(stockPromises);
+    const validResults = results.filter((result): result is NonNullable<typeof result> => result !== null);
+
+    if (validResults.length === 0) {
+      throw new Error('No valid stock data received');
     }
 
-    const data = await response.json();
-    return data.quoteResponse.result.map((stock: any, index: number) => ({
-      id: `stock-${stock.symbol}`,
-      symbol: stock.symbol,
-      name: stock.longName || stock.shortName,
-      current_price: stock.regularMarketPrice * multiplier,
-      price_change_percentage_24h: stock.regularMarketChangePercent,
-      market_cap: stock.marketCap * multiplier,
-      circulating_supply: stock.sharesOutstanding || 0,
-      total_volume: stock.regularMarketVolume * stock.regularMarketPrice * multiplier,
-      market_cap_rank: index + 1
-    }));
+    return validResults;
   } catch (error) {
     console.error('Error fetching stock data:', error);
     // Return mock data if API fails
-    return Array.from({ length: 20 }).map((_, i) => ({
-      id: `stock-${i}`,
-      symbol: stocks[i],
-      name: ['Apple Inc', 'Microsoft Corp', 'Alphabet Inc', 'Amazon.com Inc', 'NVIDIA Corp',
-            'Meta Platforms Inc', 'Tesla Inc', 'Berkshire Hathaway Inc', 'UnitedHealth Group Inc', 'Johnson & Johnson',
-            'JPMorgan Chase & Co', 'Visa Inc', 'Procter & Gamble Co', 'Mastercard Inc', 'Home Depot Inc',
-            'Chevron Corp', 'Merck & Co Inc', 'PepsiCo Inc', 'Bank of America Corp', 'Coca-Cola Co'][i],
-      current_price: (Math.random() * 1000) * multiplier,
-      price_change_percentage_24h: (Math.random() - 0.5) * 10,
-      market_cap: Math.random() * 1000000000000 * multiplier,
-      circulating_supply: Math.random() * 1000000000,
-      total_volume: Math.random() * 10000000000 * multiplier,
-      market_cap_rank: i + 1
-    }));
+    return generateMockMarketData(currency);
   }
 };
 
@@ -283,5 +287,9 @@ export const useStockData = () => {
     refetchInterval: 30000,
     staleTime: 30000,
     retry: 1,
+    onError: (error) => {
+      console.error('Stock data fetch error:', error);
+      return generateMockMarketData(currency);
+    },
   });
 };

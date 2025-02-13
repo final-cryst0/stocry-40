@@ -1,6 +1,6 @@
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface MarketStore {
   favorites: string[];
@@ -27,6 +27,7 @@ export const useMarketStore = create<MarketStore>()(
     }),
     {
       name: 'market-store',
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 
 interface CryptoData {
@@ -27,6 +26,17 @@ interface MarketData {
   total_volume: number;
 }
 
+interface NewsItem {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  source: string;
+  published_at: string;
+  categories: string[];
+  thumbnail?: string;
+}
+
 const fetchMarketData = async (): Promise<MarketData[]> => {
   const response = await fetch(
     "https://api.coingecko.com/api/v3/coins/markets?vs_currency=inr&order=market_cap_desc&per_page=20&page=1&sparkline=false"
@@ -34,6 +44,18 @@ const fetchMarketData = async (): Promise<MarketData[]> => {
   
   if (!response.ok) {
     throw new Error("Failed to fetch market data");
+  }
+  
+  return response.json();
+};
+
+const fetchMarketNews = async (): Promise<NewsItem[]> => {
+  const response = await fetch(
+    "https://api.coingecko.com/api/v3/news"
+  );
+  
+  if (!response.ok) {
+    throw new Error("Failed to fetch news");
   }
   
   return response.json();
@@ -57,6 +79,14 @@ export const fetchCryptoDetail = async (id: string): Promise<CryptoData> => {
   }
   
   return response.json();
+};
+
+export const useNewsData = () => {
+  return useQuery({
+    queryKey: ["newsData"],
+    queryFn: fetchMarketNews,
+    refetchInterval: 300000, // Refetch every 5 minutes
+  });
 };
 
 // Fetch stock data (simulated for now as we need a different API for real stock data)

@@ -1,5 +1,5 @@
 
-import { BarChart2, Heart, Newspaper, Search, RefreshCcw } from "lucide-react";
+import { BarChart2, Heart, Newspaper, Search, DollarSign, IndianRupee } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { Input } from "./ui/input";
@@ -62,7 +62,11 @@ export function Navbar({ onCurrencyChange }: NavbarProps) {
               onClick={toggleCurrency}
               className="flex items-center gap-2"
             >
-              <RefreshCcw className="h-4 w-4" />
+              {currency === "INR" ? (
+                <IndianRupee className="h-4 w-4" />
+              ) : (
+                <DollarSign className="h-4 w-4" />
+              )}
               <span>{currency}</span>
             </Button>
             <div className="text-sm text-muted-foreground hidden sm:block">

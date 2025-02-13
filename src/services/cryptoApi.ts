@@ -26,6 +26,7 @@ interface MarketData {
   market_cap: number;
   circulating_supply: number;
   total_volume: number;
+  market_cap_rank: number;
 }
 
 interface NewsItem {
@@ -44,7 +45,7 @@ interface HistoricalData {
 }
 
 const API_BASE_URL = 'https://api.coingecko.com/api/v3';
-const MOCK_MODE = true;
+const MOCK_MODE = false; // Set to false to use real API
 
 const generateMockHistoricalData = (days: number, currency: string): HistoricalData => {
   const now = Date.now();
@@ -68,10 +69,25 @@ const generateMockMarketData = (currency: string): MarketData[] => {
     { symbol: 'ETH', name: 'Ethereum', basePrice: 2500 },
     { symbol: 'USDT', name: 'Tether', basePrice: 1 },
     { symbol: 'BNB', name: 'Binance Coin', basePrice: 300 },
-    { symbol: 'SOL', name: 'Solana', basePrice: 100 }
+    { symbol: 'SOL', name: 'Solana', basePrice: 100 },
+    { symbol: 'ADA', name: 'Cardano', basePrice: 0.5 },
+    { symbol: 'XRP', name: 'Ripple', basePrice: 0.6 },
+    { symbol: 'DOT', name: 'Polkadot', basePrice: 7 },
+    { symbol: 'DOGE', name: 'Dogecoin', basePrice: 0.08 },
+    { symbol: 'AVAX', name: 'Avalanche', basePrice: 35 },
+    { symbol: 'LINK', name: 'Chainlink', basePrice: 15 },
+    { symbol: 'MATIC', name: 'Polygon', basePrice: 0.8 },
+    { symbol: 'UNI', name: 'Uniswap', basePrice: 7 },
+    { symbol: 'ATOM', name: 'Cosmos', basePrice: 10 },
+    { symbol: 'LTC', name: 'Litecoin', basePrice: 65 },
+    { symbol: 'FTM', name: 'Fantom', basePrice: 0.5 },
+    { symbol: 'ALGO', name: 'Algorand', basePrice: 0.2 },
+    { symbol: 'XLM', name: 'Stellar', basePrice: 0.1 },
+    { symbol: 'NEAR', name: 'NEAR Protocol', basePrice: 2 },
+    { symbol: 'GRT', name: 'The Graph', basePrice: 0.15 }
   ];
   
-  return cryptos.map((crypto) => ({
+  return cryptos.map((crypto, index) => ({
     id: crypto.symbol.toLowerCase(),
     symbol: crypto.symbol,
     name: crypto.name,
@@ -80,6 +96,7 @@ const generateMockMarketData = (currency: string): MarketData[] => {
     market_cap: crypto.basePrice * multiplier * 1000000,
     circulating_supply: Math.random() * 1000000000,
     total_volume: crypto.basePrice * multiplier * 100000,
+    market_cap_rank: index + 1
   }));
 };
 
@@ -95,7 +112,6 @@ const fetchHistoricalData = async (id: string, currency: string = 'inr', days: n
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
       }
     });
 
@@ -122,7 +138,6 @@ const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> 
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
       }
     });
 
@@ -130,7 +145,18 @@ const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> 
       throw new Error(`API Error: ${response.status}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    return data.map((item: any) => ({
+      id: item.id,
+      symbol: item.symbol,
+      name: item.name,
+      current_price: item.current_price,
+      price_change_percentage_24h: item.price_change_percentage_24h,
+      market_cap: item.market_cap,
+      circulating_supply: item.circulating_supply,
+      total_volume: item.total_volume,
+      market_cap_rank: item.market_cap_rank
+    }));
   } catch (error) {
     console.error('Error fetching market data:', error);
     return generateMockMarketData(currency);
@@ -162,6 +188,57 @@ const fetchMarketNews = async (): Promise<NewsItem[]> => {
   } catch (error) {
     console.error('Error fetching news:', error);
     return [];
+  }
+};
+
+const fetchStockData = async (currency: string = 'usd') => {
+  const multiplier = currency.toLowerCase() === 'usd' ? 1 : 82;
+  const stocks = [
+    'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 
+    'META', 'TSLA', 'BRK-B', 'UNH', 'JNJ',
+    'JPM', 'V', 'PG', 'MA', 'HD',
+    'CVX', 'MRK', 'PEP', 'BAC', 'KO'
+  ];
+  
+  try {
+    const symbols = stocks.join(',');
+    const response = await fetch(
+      `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch stock data');
+    }
+
+    const data = await response.json();
+    return data.quoteResponse.result.map((stock: any, index: number) => ({
+      id: `stock-${stock.symbol}`,
+      symbol: stock.symbol,
+      name: stock.longName || stock.shortName,
+      current_price: stock.regularMarketPrice * multiplier,
+      price_change_percentage_24h: stock.regularMarketChangePercent,
+      market_cap: stock.marketCap * multiplier,
+      circulating_supply: stock.sharesOutstanding || 0,
+      total_volume: stock.regularMarketVolume * stock.regularMarketPrice * multiplier,
+      market_cap_rank: index + 1
+    }));
+  } catch (error) {
+    console.error('Error fetching stock data:', error);
+    // Return mock data if API fails
+    return Array.from({ length: 20 }).map((_, i) => ({
+      id: `stock-${i}`,
+      symbol: stocks[i],
+      name: ['Apple Inc', 'Microsoft Corp', 'Alphabet Inc', 'Amazon.com Inc', 'NVIDIA Corp',
+            'Meta Platforms Inc', 'Tesla Inc', 'Berkshire Hathaway Inc', 'UnitedHealth Group Inc', 'Johnson & Johnson',
+            'JPMorgan Chase & Co', 'Visa Inc', 'Procter & Gamble Co', 'Mastercard Inc', 'Home Depot Inc',
+            'Chevron Corp', 'Merck & Co Inc', 'PepsiCo Inc', 'Bank of America Corp', 'Coca-Cola Co'][i],
+      current_price: (Math.random() * 1000) * multiplier,
+      price_change_percentage_24h: (Math.random() - 0.5) * 10,
+      market_cap: Math.random() * 1000000000000 * multiplier,
+      circulating_supply: Math.random() * 1000000000,
+      total_volume: Math.random() * 10000000000 * multiplier,
+      market_cap_rank: i + 1
+    }));
   }
 };
 
@@ -199,20 +276,12 @@ export const useNewsData = () => {
 };
 
 export const useStockData = () => {
+  const { currency } = useMarketStore();
   return useQuery({
-    queryKey: ["stockData"],
-    queryFn: async () => {
-      return Array.from({ length: 20 }).map((_, i) => ({
-        id: `stock-${i}`,
-        symbol: ["AAPL", "GOOGL", "MSFT", "AMZN", "TSLA"][i % 5],
-        name: ["Apple", "Google", "Microsoft", "Amazon", "Tesla"][i % 5],
-        current_price: Math.random() * 1000,
-        price_change_percentage_24h: (Math.random() - 0.5) * 10,
-        market_cap: Math.random() * 1000000000000,
-        circulating_supply: Math.random() * 1000000000,
-        total_volume: Math.random() * 10000000000,
-      }));
-    },
+    queryKey: ["stockData", currency],
+    queryFn: () => fetchStockData(currency),
     refetchInterval: 30000,
+    staleTime: 30000,
+    retry: 1,
   });
 };

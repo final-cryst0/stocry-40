@@ -142,6 +142,7 @@ const Index = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">Rank</TableHead>
                       <TableHead>Favorite</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Price</TableHead>
@@ -153,8 +154,11 @@ const Index = () => {
                   </TableHeader>
                   <TableBody>
                     {cryptoLoading
-                      ? Array.from({ length: 5 }).map((_, i) => (
+                      ? Array.from({ length: 20 }).map((_, i) => (
                           <TableRow key={i}>
+                            <TableCell>
+                              <div className="h-4 w-8 bg-muted rounded animate-pulse" />
+                            </TableCell>
                             <TableCell>
                               <div className="h-4 w-4 bg-muted rounded animate-pulse" />
                             </TableCell>
@@ -187,6 +191,9 @@ const Index = () => {
                               setSelectedCryptoName(crypto.name);
                             }}
                           >
+                            <TableCell className="font-medium">
+                              #{crypto.market_cap_rank}
+                            </TableCell>
                             <TableCell>
                               <Heart 
                                 className={`h-4 w-4 hover:text-red-500 transition-colors ${
@@ -235,6 +242,7 @@ const Index = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[50px]">Rank</TableHead>
                       <TableHead>Favorite</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Price</TableHead>
@@ -246,8 +254,11 @@ const Index = () => {
                   </TableHeader>
                   <TableBody>
                     {stockLoading
-                      ? Array.from({ length: 5 }).map((_, i) => (
+                      ? Array.from({ length: 20 }).map((_, i) => (
                           <TableRow key={i}>
+                            <TableCell>
+                              <div className="h-4 w-8 bg-muted rounded animate-pulse" />
+                            </TableCell>
                             <TableCell>
                               <div className="h-4 w-4 bg-muted rounded animate-pulse" />
                             </TableCell>
@@ -280,6 +291,9 @@ const Index = () => {
                               setSelectedStockName(stock.name);
                             }}
                           >
+                            <TableCell className="font-medium">
+                              #{stock.market_cap_rank}
+                            </TableCell>
                             <TableCell>
                               <Heart 
                                 className={`h-4 w-4 hover:text-red-500 transition-colors ${

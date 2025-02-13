@@ -4,18 +4,11 @@ import { Footer } from "@/components/Footer";
 import { useMarketData, useStockData } from "@/services/cryptoApi";
 import { useMarketStore } from "@/stores/marketStore";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Heart } from "lucide-react";
+import { Heart, ArrowUp, ArrowDown, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Favorites() {
-  const { favorites } = useMarketStore();
+  const { favorites, removeFavorite, currency } = useMarketStore();
   const { data: cryptoData, isLoading: cryptoLoading } = useMarketData();
   const { data: stockData, isLoading: stockLoading } = useStockData();
   const { toast } = useToast();
@@ -23,7 +16,7 @@ export default function Favorites() {
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
-      currency: "INR",
+      currency: currency,
       maximumFractionDigits: 2,
     }).format(num);
   };
@@ -32,6 +25,13 @@ export default function Favorites() {
     ...(cryptoData?.filter((crypto) => favorites.includes(crypto.id)) || []),
     ...(stockData?.filter((stock) => favorites.includes(stock.id)) || []),
   ];
+
+  const handleRemoveFavorite = (id: string, name: string) => {
+    removeFavorite(id);
+    toast({
+      description: `${name} removed from favorites`,
+    });
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -53,51 +53,47 @@ export default function Favorites() {
             </p>
           </div>
         ) : (
-          <div className="rounded-lg border bg-card">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>24h Change</TableHead>
-                  <TableHead className="hidden md:table-cell">Market Cap</TableHead>
-                  <TableHead className="hidden md:table-cell">Volume (24h)</TableHead>
-                  <TableHead className="text-right">Remove</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {favoriteItems.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">
-                      {item.name} ({item.symbol.toUpperCase()})
-                    </TableCell>
-                    <TableCell>{formatNumber(item.current_price)}</TableCell>
-                    <TableCell
-                      className={item.price_change_percentage_24h >= 0 ? "text-green-500" : "text-red-500"}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {favoriteItems.map((item) => (
+              <div
+                key={item.id}
+                className="p-6 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all shadow-[4px_4px_12px_rgb(0_0_0/0.3)] hover:shadow-[6px_6px_16px_rgb(0_0_0/0.35)]"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-lg font-bold">{item.symbol.toUpperCase()}</h3>
+                    <p className="text-sm text-muted-foreground">{item.name}</p>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => handleRemoveFavorite(item.id, item.name)}
+                      className="p-2 hover:bg-muted rounded-full transition-colors"
                     >
-                      {item.price_change_percentage_24h.toFixed(2)}%
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {formatNumber(item.market_cap)}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {formatNumber(item.total_volume)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Heart
-                        className="ml-auto h-4 w-4 fill-current text-red-500 hover:text-red-600 transition-colors cursor-pointer"
-                        onClick={() => {
-                          useMarketStore.getState().removeFavorite(item.id);
-                          toast({
-                            description: `${item.name} removed from favorites`,
-                          });
-                        }}
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                    </button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="hover:bg-primary/10"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-2xl font-bold">{formatNumber(item.current_price)}</p>
+                  <div className="flex justify-between items-center">
+                    <div className={`flex items-center ${item.price_change_percentage_24h >= 0 ? "text-green-500" : "text-red-500"}`}>
+                      {item.price_change_percentage_24h >= 0 ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
+                      <span className="ml-1">{Math.abs(item.price_change_percentage_24h).toFixed(2)}%</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      MCap: {formatNumber(item.market_cap)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </main>

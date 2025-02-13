@@ -266,3 +266,13 @@ const fetchMarketNews = async (): Promise<NewsItem[]> => {
     return [];
   }
 };
+
+export const useNewsData = () => {
+  return useQuery({
+    queryKey: ["news"],
+    queryFn: fetchMarketNews,
+    refetchInterval: 300000, // Refresh every 5 minutes
+    staleTime: 240000,
+    retry: 1,
+  });
+};

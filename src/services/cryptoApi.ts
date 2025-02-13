@@ -1,8 +1,8 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useMarketStore } from "@/stores/marketStore";
 
 const BINANCE_API_BASE = 'https://api.binance.com/api/v3';
-const NSE_STOCKS_BASE = 'https://www.nseindia.com/api/v1';
 
 interface MarketData {
   id: string;
@@ -15,6 +15,20 @@ interface MarketData {
   total_volume: number;
   market_cap_rank: number;
 }
+
+// Updated with correct Binance trading pairs
+const CRYPTO_PAIRS = [
+  { symbol: 'BTCUSDT', displaySymbol: 'BTC', name: 'Bitcoin' },
+  { symbol: 'ETHUSDT', displaySymbol: 'ETH', name: 'Ethereum' },
+  { symbol: 'BNBUSDT', displaySymbol: 'BNB', name: 'Binance Coin' },
+  { symbol: 'XRPUSDT', displaySymbol: 'XRP', name: 'Ripple' },
+  { symbol: 'SOLUSDT', displaySymbol: 'SOL', name: 'Solana' },
+  { symbol: 'ADAUSDT', displaySymbol: 'ADA', name: 'Cardano' },
+  { symbol: 'DOTUSDT', displaySymbol: 'DOT', name: 'Polkadot' },
+  { symbol: 'MATICUSDT', displaySymbol: 'MATIC', name: 'Polygon' },
+  { symbol: 'DOGEUSDT', displaySymbol: 'DOGE', name: 'Dogecoin' },
+  { symbol: 'SHIBUSDT', displaySymbol: 'SHIB', name: 'Shiba Inu' }
+];
 
 // Top Indian stocks
 const INDIAN_STOCKS = [
@@ -30,23 +44,12 @@ const INDIAN_STOCKS = [
   { symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank' }
 ];
 
-// Top crypto pairs traded in INR
-const CRYPTO_PAIRS = [
-  { symbol: 'BTCINR', name: 'Bitcoin' },
-  { symbol: 'ETHINR', name: 'Ethereum' },
-  { symbol: 'BNBINR', name: 'Binance Coin' },
-  { symbol: 'XRPINR', name: 'Ripple' },
-  { symbol: 'SOLINR', name: 'Solana' },
-  { symbol: 'ADAINR', name: 'Cardano' },
-  { symbol: 'DOTINR', name: 'Polkadot' },
-  { symbol: 'MATICINR', name: 'Polygon' },
-  { symbol: 'DOGEINR', name: 'Dogecoin' },
-  { symbol: 'SHIBINR', name: 'Shiba Inu' }
-];
-
 const fetchBinancePrice = async (symbol: string) => {
   try {
     const response = await fetch(`${BINANCE_API_BASE}/ticker/24hr?symbol=${symbol}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
     const data = await response.json();
     return {
       current_price: parseFloat(data.lastPrice),
@@ -61,20 +64,28 @@ const fetchBinancePrice = async (symbol: string) => {
   }
 };
 
+// Function to convert USDT price to INR
+const convertToINR = (usdtPrice: number) => {
+  const usdtToInr = 83; // Approximate USDT to INR conversion rate
+  return usdtPrice * usdtToInr;
+};
+
 const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> => {
   try {
     const cryptoPromises = CRYPTO_PAIRS.map(async (pair) => {
       const priceData = await fetchBinancePrice(pair.symbol);
       if (!priceData) return null;
 
+      const priceInINR = convertToINR(priceData.current_price);
+
       return {
-        id: pair.symbol.toLowerCase(),
-        symbol: pair.symbol,
+        id: pair.displaySymbol.toLowerCase(),
+        symbol: pair.displaySymbol,
         name: pair.name,
-        current_price: priceData.current_price,
+        current_price: priceInINR,
         price_change_percentage_24h: priceData.price_change_percentage_24h,
-        market_cap: priceData.total_volume * priceData.current_price,
-        circulating_supply: 0, // Not available from basic Binance API
+        market_cap: priceData.total_volume * priceInINR,
+        circulating_supply: 0,
         total_volume: priceData.total_volume,
         market_cap_rank: 0
       };
@@ -89,8 +100,6 @@ const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> 
 };
 
 const fetchStockData = async (currency: string = 'inr'): Promise<MarketData[]> => {
-  // Since direct NSE API access requires authentication, we'll use TradingView widget
-  // for real-time data display. For now, return mock data
   return INDIAN_STOCKS.map((stock, index) => ({
     id: stock.symbol.toLowerCase(),
     symbol: stock.symbol,
@@ -109,7 +118,7 @@ export const useMarketData = () => {
   return useQuery({
     queryKey: ["marketData", currency],
     queryFn: () => fetchMarketData(currency),
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 10000,
     staleTime: 5000,
     retry: 1,
   });

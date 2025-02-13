@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -6,7 +5,7 @@ import { CryptoDetail } from "@/components/CryptoDetail";
 import { StockDetail } from "@/components/StockDetail";
 import { useMarketData, useStockData } from "@/services/cryptoApi";
 import { useToast } from "@/components/ui/use-toast";
-import { Heart, Sparkles, TrendingUp, DollarSign, BarChart3, Briefcase } from "lucide-react";
+import { Brain, Heart, Sparkles, TrendingUp, DollarSign, BarChart3, Briefcase, ArrowRight } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -18,7 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMarketStore } from "@/stores/marketStore";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 const Index = () => {
   const [selectedCrypto, setSelectedCrypto] = useState<string | null>(null);
@@ -48,50 +47,88 @@ const Index = () => {
     }
   };
 
-  const handleAIAnalysis = (type: 'crypto' | 'stock', symbol: string) => {
+  const handleAIAnalysis = (type: 'technical' | 'sentiment' | 'prediction' | 'crypto' | 'stock', symbol: string) => {
     toast({
-      title: "AI Analysis",
-      description: `Analyzing ${type === 'crypto' ? 'cryptocurrency' : 'stock'} ${symbol}...`,
+      title: "AI Analysis Initiated",
+      description: `Analyzing ${type === 'crypto' ? 'cryptocurrency' : type === 'stock' ? 'stock' : 'market'} ${symbol === 'global' ? 'trends' : symbol}...`,
+      duration: 3000,
     });
     // Here you would typically make an API call to your AI service
   };
 
   const renderMarketOverview = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">
-            Market Cap
+    <div className="grid gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xl font-bold">
+              Market Cap
+            </CardTitle>
+            <DollarSign className="h-5 w-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-primary">$2.4T</div>
+            <p className="text-sm text-muted-foreground mt-1">+12.5% from last month</p>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xl font-bold">
+              24h Volume
+            </CardTitle>
+            <BarChart3 className="h-5 w-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-primary">$84.2B</div>
+            <p className="text-sm text-muted-foreground mt-1">+5.2% from yesterday</p>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xl font-bold">
+              Active Pairs
+            </CardTitle>
+            <Briefcase className="h-5 w-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-primary">2,846</div>
+            <p className="text-sm text-muted-foreground mt-1">+123 new pairs</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="w-full hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold flex items-center gap-2">
+            <Brain className="h-6 w-6" />
+            Future Analysis using AI
           </CardTitle>
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
+          <CardDescription>
+            Our advanced AI system analyzes market trends, technical indicators, and sentiment data to provide insights and predictions.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">$2.4T</div>
-          <p className="text-xs text-muted-foreground">+12.5% from last month</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">
-            24h Volume
-          </CardTitle>
-          <BarChart3 className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">$84.2B</div>
-          <p className="text-xs text-muted-foreground">+5.2% from yesterday</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">
-            Active Pairs
-          </CardTitle>
-          <Briefcase className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">2,846</div>
-          <p className="text-xs text-muted-foreground">+123 new pairs</p>
+        <CardContent className="grid md:grid-cols-3 gap-4">
+          <div className="flex flex-col gap-2">
+            <h3 className="font-semibold">Technical Analysis</h3>
+            <p className="text-sm text-muted-foreground">Advanced pattern recognition and indicator analysis for better trading decisions.</p>
+            <Button variant="outline" className="mt-2" onClick={() => handleAIAnalysis('technical', 'global')}>
+              Analyze Patterns <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex flex-col gap-2">
+            <h3 className="font-semibold">Sentiment Analysis</h3>
+            <p className="text-sm text-muted-foreground">Real-time analysis of market sentiment from social media and news sources.</p>
+            <Button variant="outline" className="mt-2" onClick={() => handleAIAnalysis('sentiment', 'global')}>
+              Check Sentiment <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex flex-col gap-2">
+            <h3 className="font-semibold">Price Predictions</h3>
+            <p className="text-sm text-muted-foreground">AI-powered price predictions based on historical data and market conditions.</p>
+            <Button variant="outline" className="mt-2" onClick={() => handleAIAnalysis('prediction', 'global')}>
+              View Predictions <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -109,10 +146,10 @@ const Index = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar onCurrencyChange={setCurrency} />
       <main className="flex-1 container mx-auto px-4 py-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Explore the Markets</h1>
-          <p className="text-muted-foreground mt-2">
-            Track real-time prices of top cryptocurrencies and stocks
+        <header className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-foreground mb-4">Explore the Markets</h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Track real-time prices of top cryptocurrencies and stocks, powered by advanced AI analysis
           </p>
         </header>
 

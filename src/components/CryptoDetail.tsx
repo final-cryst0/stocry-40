@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { useToast } from "./ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { useMarketStore } from "@/stores/marketStore";
 
 interface CryptoDetailProps {
   symbol: string;
@@ -17,6 +18,7 @@ export function CryptoDetail({ symbol, name, onBack }: CryptoDetailProps) {
   const [timeframe, setTimeframe] = useState(7);
   const { data, isLoading, error } = useHistoricalData(symbol, timeframe);
   const { toast } = useToast();
+  const { currency } = useMarketStore();
 
   const handleAIAnalysis = () => {
     toast({
@@ -33,8 +35,25 @@ export function CryptoDetail({ symbol, name, onBack }: CryptoDetailProps) {
     });
   }
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
+
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    if (timeframe === 1) {
+      return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
   const chartData = data?.prices.map(([timestamp, price]) => ({
-    date: new Date(timestamp).toLocaleDateString(),
+    date: timestamp,
     price: price,
   }));
 
@@ -83,14 +102,33 @@ export function CryptoDetail({ symbol, name, onBack }: CryptoDetailProps) {
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={chartData}>
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={formatDate}
+                  stroke="#8884d8"
+                  fontSize={12}
+                />
+                <YAxis 
+                  tickFormatter={formatCurrency}
+                  stroke="#8884d8"
+                  fontSize={12}
+                />
+                <Tooltip 
+                  labelFormatter={formatDate}
+                  formatter={(value: number) => [formatCurrency(value), 'Price']}
+                  contentStyle={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '8px',
+                    border: '1px solid #8884d8',
+                  }}
+                />
                 <Line
                   type="monotone"
                   dataKey="price"
                   stroke="#8884d8"
+                  strokeWidth={2}
                   dot={false}
+                  activeDot={{ r: 4, fill: '#8884d8' }}
                 />
               </LineChart>
             </ResponsiveContainer>

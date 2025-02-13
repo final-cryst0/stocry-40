@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useMarketStore } from "@/stores/marketStore";
 import { useToast } from "@/hooks/use-toast";
@@ -45,16 +44,16 @@ interface HistoricalData {
 }
 
 const API_BASE_URL = 'https://api.coingecko.com/api/v3';
-const MOCK_MODE = true; // Set to true to use mock data during development
+const MOCK_MODE = true;
 
-const generateMockHistoricalData = (days: number): HistoricalData => {
+const generateMockHistoricalData = (days: number, currency: string): HistoricalData => {
   const now = Date.now();
-  const interval = (days * 24 * 60 * 60 * 1000) / 100; // 100 data points
-  const basePrice = 45000 + Math.random() * 5000;
+  const interval = (days * 24 * 60 * 60 * 1000) / 100;
+  const basePrice = currency.toLowerCase() === 'usd' ? 45000 : 3700000; // Approximate USD to INR conversion
   
   const prices: [number, number][] = Array.from({ length: 100 }).map((_, i) => {
     const timestamp = now - (days * 24 * 60 * 60 * 1000) + (i * interval);
-    const randomChange = (Math.random() - 0.5) * 1000;
+    const randomChange = (Math.random() - 0.5) * (currency.toLowerCase() === 'usd' ? 1000 : 82000);
     const price = basePrice + randomChange;
     return [timestamp, price];
   });
@@ -62,30 +61,31 @@ const generateMockHistoricalData = (days: number): HistoricalData => {
   return { prices };
 };
 
-const generateMockMarketData = (): MarketData[] => {
+const generateMockMarketData = (currency: string): MarketData[] => {
+  const multiplier = currency.toLowerCase() === 'usd' ? 1 : 82; // Approximate USD to INR conversion rate
   const cryptos = [
-    { symbol: 'BTC', name: 'Bitcoin' },
-    { symbol: 'ETH', name: 'Ethereum' },
-    { symbol: 'USDT', name: 'Tether' },
-    { symbol: 'BNB', name: 'Binance Coin' },
-    { symbol: 'SOL', name: 'Solana' }
+    { symbol: 'BTC', name: 'Bitcoin', basePrice: 45000 },
+    { symbol: 'ETH', name: 'Ethereum', basePrice: 2500 },
+    { symbol: 'USDT', name: 'Tether', basePrice: 1 },
+    { symbol: 'BNB', name: 'Binance Coin', basePrice: 300 },
+    { symbol: 'SOL', name: 'Solana', basePrice: 100 }
   ];
   
-  return cryptos.map((crypto, i) => ({
+  return cryptos.map((crypto) => ({
     id: crypto.symbol.toLowerCase(),
     symbol: crypto.symbol,
     name: crypto.name,
-    current_price: Math.random() * 50000,
+    current_price: crypto.basePrice * multiplier,
     price_change_percentage_24h: (Math.random() - 0.5) * 10,
-    market_cap: Math.random() * 1000000000000,
+    market_cap: crypto.basePrice * multiplier * 1000000,
     circulating_supply: Math.random() * 1000000000,
-    total_volume: Math.random() * 10000000000,
+    total_volume: crypto.basePrice * multiplier * 100000,
   }));
 };
 
 const fetchHistoricalData = async (id: string, currency: string = 'inr', days: number = 7): Promise<HistoricalData> => {
   if (MOCK_MODE) {
-    return generateMockHistoricalData(days);
+    return generateMockHistoricalData(days, currency);
   }
 
   const url = `${API_BASE_URL}/coins/${id}/market_chart?vs_currency=${currency.toLowerCase()}&days=${days}`;
@@ -106,13 +106,13 @@ const fetchHistoricalData = async (id: string, currency: string = 'inr', days: n
     return await response.json();
   } catch (error) {
     console.error('Error fetching historical data:', error);
-    return generateMockHistoricalData(days);
+    return generateMockHistoricalData(days, currency);
   }
 };
 
 const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> => {
   if (MOCK_MODE) {
-    return generateMockMarketData();
+    return generateMockMarketData(currency);
   }
 
   const url = `${API_BASE_URL}/coins/markets?vs_currency=${currency.toLowerCase()}&order=market_cap_desc&per_page=20&page=1&sparkline=false`;
@@ -133,7 +133,7 @@ const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> 
     return await response.json();
   } catch (error) {
     console.error('Error fetching market data:', error);
-    return generateMockMarketData();
+    return generateMockMarketData(currency);
   }
 };
 
@@ -182,7 +182,7 @@ export const useHistoricalData = (id: string, days: number = 7) => {
     queryKey: ["historicalData", id, currency, days],
     queryFn: () => fetchHistoricalData(id, currency, days),
     enabled: !!id,
-    staleTime: 300000, // 5 minutes
+    staleTime: 300000,
     retry: 1,
     refetchOnWindowFocus: false,
   });
@@ -192,7 +192,7 @@ export const useNewsData = () => {
   return useQuery({
     queryKey: ["newsData"],
     queryFn: fetchMarketNews,
-    staleTime: 300000, // 5 minutes
+    staleTime: 300000,
     retry: 1,
     refetchOnWindowFocus: false,
   });

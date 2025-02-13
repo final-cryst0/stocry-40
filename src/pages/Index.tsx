@@ -14,11 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TabsContent } from "@/components/ui/tabs";
 import { useMarketStore } from "@/stores/marketStore";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/markets/Header";
 import { MarketOverview } from "@/components/markets/MarketOverview";
+import { MarketTabs } from "@/components/markets/MarketTabs";
 
 const Index = () => {
   const [selectedCrypto, setSelectedCrypto] = useState<string | null>(null);
@@ -84,14 +85,9 @@ const Index = () => {
             onBack={() => setSelectedStock(null)}
           />
         ) : (
-          <Tabs defaultValue="crypto" className="space-y-4">
-            <TabsList className="w-full justify-start">
-              <TabsTrigger value="crypto">Cryptocurrencies</TabsTrigger>
-              <TabsTrigger value="stocks">Stocks</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="crypto">
-              <div className="rounded-lg border bg-card">
+          <MarketTabs defaultValue="crypto">
+            <TabsContent value="crypto" className="mt-0">
+              <div className="rounded-xl border bg-card shadow-lg">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -138,7 +134,7 @@ const Index = () => {
                       : cryptoData?.map((crypto) => (
                           <TableRow
                             key={crypto.id}
-                            className="cursor-pointer"
+                            className="cursor-pointer hover:bg-muted/50"
                             onClick={() => {
                               setSelectedCrypto(crypto.id);
                               setSelectedCryptoName(crypto.name);
@@ -155,25 +151,26 @@ const Index = () => {
                                 onClick={(e) => handleFavoriteClick(e, crypto.id)}
                               />
                             </TableCell>
-                            <TableCell className="font-medium text-foreground">
+                            <TableCell className="font-medium">
                               {crypto.name} ({crypto.symbol.toUpperCase()})
                             </TableCell>
-                            <TableCell className="text-foreground">{formatNumber(crypto.current_price)}</TableCell>
+                            <TableCell>{formatNumber(crypto.current_price)}</TableCell>
                             <TableCell
                               className={crypto.price_change_percentage_24h >= 0 ? "text-green-500" : "text-red-500"}
                             >
                               {crypto.price_change_percentage_24h.toFixed(2)}%
                             </TableCell>
-                            <TableCell className="hidden md:table-cell text-foreground">
+                            <TableCell className="hidden md:table-cell">
                               {formatNumber(crypto.market_cap)}
                             </TableCell>
-                            <TableCell className="hidden md:table-cell text-foreground">
+                            <TableCell className="hidden md:table-cell">
                               {formatNumber(crypto.total_volume)}
                             </TableCell>
                             <TableCell>
                               <Button
                                 variant="ghost"
                                 size="sm"
+                                className="hover:bg-primary/10"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleAIAnalysis('crypto', crypto.symbol);
@@ -190,8 +187,8 @@ const Index = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="stocks">
-              <div className="rounded-lg border bg-card">
+            <TabsContent value="stocks" className="mt-0">
+              <div className="rounded-xl border bg-card shadow-lg">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -238,7 +235,7 @@ const Index = () => {
                       : stockData?.map((stock) => (
                           <TableRow
                             key={stock.id}
-                            className="cursor-pointer"
+                            className="cursor-pointer hover:bg-muted/50"
                             onClick={() => {
                               setSelectedStock(stock.id);
                               setSelectedStockName(stock.name);
@@ -255,25 +252,26 @@ const Index = () => {
                                 onClick={(e) => handleFavoriteClick(e, stock.id)}
                               />
                             </TableCell>
-                            <TableCell className="font-medium text-foreground">
+                            <TableCell className="font-medium">
                               {stock.name} ({stock.symbol})
                             </TableCell>
-                            <TableCell className="text-foreground">{formatNumber(stock.current_price)}</TableCell>
+                            <TableCell>{formatNumber(stock.current_price)}</TableCell>
                             <TableCell
                               className={stock.price_change_percentage_24h >= 0 ? "text-green-500" : "text-red-500"}
                             >
                               {stock.price_change_percentage_24h.toFixed(2)}%
                             </TableCell>
-                            <TableCell className="hidden md:table-cell text-foreground">
+                            <TableCell className="hidden md:table-cell">
                               {formatNumber(stock.market_cap)}
                             </TableCell>
-                            <TableCell className="hidden md:table-cell text-foreground">
+                            <TableCell className="hidden md:table-cell">
                               {formatNumber(stock.total_volume)}
                             </TableCell>
                             <TableCell>
                               <Button
                                 variant="ghost"
                                 size="sm"
+                                className="hover:bg-primary/10"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleAIAnalysis('stock', stock.symbol);
@@ -289,7 +287,7 @@ const Index = () => {
                 </Table>
               </div>
             </TabsContent>
-          </Tabs>
+          </MarketTabs>
         )}
       </main>
       <Footer />

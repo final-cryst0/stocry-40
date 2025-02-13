@@ -15,12 +15,6 @@ export function Navbar({ onCurrencyChange }: NavbarProps) {
   const [showSearch, setShowSearch] = useState(false);
   const { currency } = useMarketStore();
 
-  const toggleCurrency = () => {
-    if (onCurrencyChange) {
-      onCurrencyChange(currency === "INR" ? "USD" : "INR");
-    }
-  };
-
   return (
     <nav className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-4">
@@ -59,7 +53,7 @@ export function Navbar({ onCurrencyChange }: NavbarProps) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={toggleCurrency}
+              onClick={() => onCurrencyChange?.(currency === "INR" ? "USD" : "INR")}
               className="flex items-center gap-2"
             >
               {currency === "INR" ? (
@@ -69,9 +63,6 @@ export function Navbar({ onCurrencyChange }: NavbarProps) {
               )}
               <span>{currency}</span>
             </Button>
-            <div className="text-sm text-muted-foreground hidden sm:block">
-              ETH Gas: <span className="text-foreground">0.87558316 Gwei</span>
-            </div>
             <ThemeToggle />
           </div>
         </div>

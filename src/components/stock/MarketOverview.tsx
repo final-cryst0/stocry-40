@@ -19,7 +19,7 @@ export function MarketOverview({
   weekRange,
 }: MarketOverviewProps) {
   return (
-    <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+    <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-[0_8px_16px_rgb(0_0_0/0.1)]">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium">Market Overview</CardTitle>
         <Info className="h-4 w-4 text-muted-foreground" />

@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Header } from "@/components/markets/Header";
 import { MarketOverview } from "@/components/markets/MarketOverview";
 import { MarketTabs } from "@/components/markets/MarketTabs";
-import { CryptoCard } from "@/components/markets/CryptoCard";
+import { CryptoCard } from "@/components/CryptoCard";
 
 const Index = () => {
   const [selectedCrypto, setSelectedCrypto] = useState<string | null>(null);

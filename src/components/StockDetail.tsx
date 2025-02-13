@@ -6,7 +6,6 @@ import { useToast } from "./ui/use-toast";
 import { useMarketStore } from "@/stores/marketStore";
 import { StockPriceChart } from "./stock/StockPriceChart";
 import { StockStatistics } from "./stock/StockStatistics";
-import { MarketOverview } from "./stock/MarketOverview";
 import { TechnicalIndicators } from "./stock/TechnicalIndicators";
 
 interface StockDetailProps {
@@ -126,16 +125,6 @@ export function StockDetail({ symbol, name, onBack }: StockDetailProps) {
             lowestPrice={formatCurrency(Math.min(...chartData.map(d => d.price)))}
             highestPrice={formatCurrency(Math.max(...chartData.map(d => d.price)))}
             isPriceUp={isPriceUp}
-          />
-
-          <MarketOverview
-            marketCap={formatCurrency(1000000000)}
-            volume={formatCurrency(50000000)}
-            peRatio={24.5}
-            weekRange={{
-              low: formatCurrency(80),
-              high: formatCurrency(120),
-            }}
           />
 
           <TechnicalIndicators

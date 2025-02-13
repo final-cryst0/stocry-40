@@ -36,7 +36,7 @@ export function CryptoDetail({ symbol, name, onBack }: CryptoDetailProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <TradingViewWidget symbol={`${symbol}INR`} />
+        <TradingViewWidget symbol={symbol} />
         <CryptoStats
           timeframe={timeframe}
           currentPrice="Loading..."

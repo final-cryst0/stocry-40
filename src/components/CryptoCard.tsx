@@ -35,7 +35,7 @@ export function CryptoCard({
 
   if (isLoading) {
     return (
-      <div className="p-6 rounded-xl border-2 border-border bg-card/50 shadow-[6px_6px_0_rgb(0_0_0/0.3)] backdrop-blur-sm animate-pulse">
+      <div className="p-6 rounded-xl border border-border/50 bg-card/50 shadow-[0_8px_16px_rgb(0_0_0/0.1)] backdrop-blur-sm animate-pulse">
         <div className="flex justify-between items-start mb-4">
           <div>
             <div className="h-6 w-16 bg-muted rounded" />
@@ -53,8 +53,8 @@ export function CryptoCard({
 
   return (
     <div
+      className="relative p-6 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all cursor-pointer shadow-[0_8px_16px_rgb(0_0_0/0.1)]"
       onClick={onClick}
-      className="p-6 rounded-xl border-2 border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all cursor-pointer shadow-[6px_6px_0_rgb(0_0_0/0.3)] hover:shadow-[8px_8px_0_rgb(0_0_0/0.35)]"
     >
       <div className="flex justify-between items-start mb-4">
         <div>
@@ -68,7 +68,7 @@ export function CryptoCard({
                 e.stopPropagation();
                 onFavoriteClick(e);
               }}
-              className="p-2 hover:bg-red-500/10 rounded-full transition-colors"
+              className="p-2 hover:bg-muted rounded-full transition-colors"
             >
               <Heart 
                 className={`h-4 w-4 ${isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground"}`}
@@ -78,7 +78,11 @@ export function CryptoCard({
           <Button
             variant="ghost"
             size="sm"
-            className="hover:bg-red-500/10"
+            className="hover:bg-primary/10"
+            onClick={(e) => {
+              e.stopPropagation();
+              // Add your AI analysis handler here
+            }}
           >
             <Sparkles className="h-4 w-4" />
           </Button>

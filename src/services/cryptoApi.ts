@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 
 interface CryptoData {
@@ -50,15 +51,28 @@ const fetchMarketData = async (): Promise<MarketData[]> => {
 };
 
 const fetchMarketNews = async (): Promise<NewsItem[]> => {
+  // Use CryptoCompare News API as a more reliable alternative
   const response = await fetch(
-    "https://api.coingecko.com/api/v3/news"
+    "https://min-api.cryptocompare.com/data/v2/news/?lang=EN&sortOrder=popular"
   );
   
   if (!response.ok) {
     throw new Error("Failed to fetch news");
   }
   
-  return response.json();
+  const data = await response.json();
+  
+  // Transform the response to match our NewsItem interface
+  return data.Data.map((item: any) => ({
+    id: item.id.toString(),
+    title: item.title,
+    description: item.body,
+    url: item.url,
+    source: item.source,
+    published_at: new Date(item.published_on * 1000).toISOString(),
+    categories: [item.categories],
+    thumbnail: item.imageurl,
+  }));
 };
 
 export const useMarketData = () => {

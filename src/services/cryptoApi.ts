@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useMarketStore } from "@/stores/marketStore";
 
@@ -43,7 +42,7 @@ const CRYPTO_PAIRS = [
   { symbol: 'SHIBUSDT', displaySymbol: 'SHIB', name: 'Shiba Inu' }
 ];
 
-// Fetch latest USD to INR exchange rate
+// Fetch latest USD to INR exchange rate from Binance
 const fetchUSDINRRate = async () => {
   try {
     const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBIDR');
@@ -134,8 +133,8 @@ export const useMarketData = () => {
   return useQuery({
     queryKey: ["marketData", currency],
     queryFn: () => fetchMarketData(currency),
-    refetchInterval: 10000, // Refresh every 10 seconds
-    staleTime: 5000,
+    refetchInterval: 5000, // Refresh every 5 seconds for more frequent updates
+    staleTime: 2000,
     retry: 1,
   });
 };
@@ -145,8 +144,8 @@ export const useStockData = () => {
   return useQuery({
     queryKey: ["stockData", currency],
     queryFn: () => fetchStockData(currency),
-    refetchInterval: 10000,
-    staleTime: 5000,
+    refetchInterval: 5000,
+    staleTime: 2000,
     retry: 1,
   });
 };

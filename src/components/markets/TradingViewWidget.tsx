@@ -1,6 +1,12 @@
 
 import { useEffect, useRef } from 'react';
 
+declare global {
+  interface Window {
+    TradingView: any;
+  }
+}
+
 interface TradingViewWidgetProps {
   symbol: string;
   isStock?: boolean;
@@ -10,40 +16,43 @@ export function TradingViewWidget({ symbol, isStock = false }: TradingViewWidget
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!symbol) return;
+
     const script = document.createElement("script");
     script.src = "https://s3.tradingview.com/tv.js";
     script.async = true;
     script.onload = () => {
       if (window.TradingView && container.current) {
-        new window.TradingView.widget({
-          autosize: true,
+        const config = {
+          width: "100%",
+          height: "600",
+          autosize: false,
           symbol: isStock ? `BSE:${symbol}` : `BINANCE:${symbol}USDT`,
-          interval: "D",
+          interval: "1",
           timezone: "Asia/Kolkata",
           theme: "dark",
           style: "1",
           locale: "en",
           toolbar_bg: "#f1f3f6",
           enable_publishing: false,
+          hide_top_toolbar: false,
+          hide_side_toolbar: false,
           allow_symbol_change: true,
+          save_image: false,
           container_id: container.current.id,
-          studies: [
-            "MASimple@tv-basicstudies",
-            "RSI@tv-basicstudies"
-          ],
+          withdateranges: true,
+          details: true,
+          calendar: true,
           show_popup_button: true,
           popup_width: "1000",
           popup_height: "650",
-          withdateranges: true,
-          allow_symbol_change: true,
-          details: true,
-          hotlist: true,
-          calendar: true,
-          width: "100%",
-          height: "600"
-        });
+        };
+
+        new window.TradingView.widget(config);
       }
     };
+
+    // Add script to document
     document.head.appendChild(script);
 
     return () => {
@@ -52,6 +61,8 @@ export function TradingViewWidget({ symbol, isStock = false }: TradingViewWidget
       }
     };
   }, [symbol, isStock]);
+
+  if (!symbol) return null;
 
   return (
     <div 

@@ -16,20 +16,20 @@ interface MarketData {
   market_cap_rank: number;
 }
 
-// Mock data for fallback
-const generateMockData = (symbol: string, name: string): MarketData => ({
-  id: symbol.toLowerCase(),
-  symbol: symbol,
-  name: name,
-  current_price: Math.random() * 100000,
-  price_change_percentage_24h: (Math.random() - 0.5) * 10,
-  market_cap: Math.random() * 1000000000,
-  circulating_supply: Math.random() * 1000000,
-  total_volume: Math.random() * 10000000,
-  market_cap_rank: Math.floor(Math.random() * 100)
-});
+// Top Indian stocks with BSE symbols
+const INDIAN_STOCKS = [
+  { symbol: 'RELIANCE', name: 'Reliance Industries', bseCode: '500325' },
+  { symbol: 'TCS', name: 'Tata Consultancy Services', bseCode: '532540' },
+  { symbol: 'HDFCBANK', name: 'HDFC Bank', bseCode: '500180' },
+  { symbol: 'INFY', name: 'Infosys', bseCode: '500209' },
+  { symbol: 'HINDUNILVR', name: 'Hindustan Unilever', bseCode: '500696' },
+  { symbol: 'ICICIBANK', name: 'ICICI Bank', bseCode: '532174' },
+  { symbol: 'SBIN', name: 'State Bank of India', bseCode: '500112' },
+  { symbol: 'BHARTIARTL', name: 'Bharti Airtel', bseCode: '532454' },
+  { symbol: 'ITC', name: 'ITC', bseCode: '500875' },
+  { symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank', bseCode: '500247' }
+];
 
-// Updated with correct Binance trading pairs and proper USDT pairs
 const CRYPTO_PAIRS = [
   { symbol: 'BTCUSDT', displaySymbol: 'BTC', name: 'Bitcoin' },
   { symbol: 'ETHUSDT', displaySymbol: 'ETH', name: 'Ethereum' },
@@ -43,19 +43,18 @@ const CRYPTO_PAIRS = [
   { symbol: 'SHIBUSDT', displaySymbol: 'SHIB', name: 'Shiba Inu' }
 ];
 
-// Top Indian stocks
-const INDIAN_STOCKS = [
-  { symbol: 'RELIANCE', name: 'Reliance Industries' },
-  { symbol: 'TCS', name: 'Tata Consultancy Services' },
-  { symbol: 'HDFCBANK', name: 'HDFC Bank' },
-  { symbol: 'INFY', name: 'Infosys' },
-  { symbol: 'HINDUNILVR', name: 'Hindustan Unilever' },
-  { symbol: 'ICICIBANK', name: 'ICICI Bank' },
-  { symbol: 'SBIN', name: 'State Bank of India' },
-  { symbol: 'BHARTIARTL', name: 'Bharti Airtel' },
-  { symbol: 'ITC', name: 'ITC' },
-  { symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank' }
-];
+// Fetch latest USD to INR exchange rate
+const fetchUSDINRRate = async () => {
+  try {
+    const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBIDR');
+    const data = await response.json();
+    // Using USDT-BIDR as a proxy, then dividing by 14500 (approximate IDR/INR rate)
+    return parseFloat(data.price) / 14500;
+  } catch (error) {
+    console.error('Error fetching USD/INR rate:', error);
+    return 83; // Fallback rate
+  }
+};
 
 const fetchBinancePrice = async (symbol: string) => {
   try {
@@ -63,8 +62,7 @@ const fetchBinancePrice = async (symbol: string) => {
     const response = await fetch(`${BINANCE_API_BASE}/ticker/24hr?symbol=${symbol}`);
     
     if (!response.ok) {
-      console.error(`HTTP error! status: ${response.status} for symbol: ${symbol}`);
-      return null;
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const data = await response.json();
@@ -81,23 +79,20 @@ const fetchBinancePrice = async (symbol: string) => {
   }
 };
 
-const convertToINR = (usdtPrice: number) => {
-  const usdtToInr = 83; // Approximate USDT to INR conversion rate
-  return usdtPrice * usdtToInr;
-};
-
 const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> => {
   try {
+    const usdInrRate = await fetchUSDINRRate();
+    console.log('Current USD/INR rate:', usdInrRate);
+
     const cryptoPromises = CRYPTO_PAIRS.map(async (pair) => {
       const priceData = await fetchBinancePrice(pair.symbol);
       
-      // If API call fails, return mock data
       if (!priceData) {
-        console.log(`Using mock data for ${pair.symbol}`);
-        return generateMockData(pair.displaySymbol, pair.name);
+        console.error(`Failed to fetch data for ${pair.symbol}`);
+        return null;
       }
 
-      const priceInINR = convertToINR(priceData.current_price);
+      const priceInINR = priceData.current_price * usdInrRate;
 
       return {
         id: pair.displaySymbol.toLowerCase(),
@@ -116,14 +111,22 @@ const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> 
     return results.filter((result): result is MarketData => result !== null);
   } catch (error) {
     console.error('Error fetching market data:', error);
-    // Return mock data for all pairs if fetching fails
-    return CRYPTO_PAIRS.map(pair => generateMockData(pair.displaySymbol, pair.name));
+    throw error;
   }
 };
 
 const fetchStockData = async (currency: string = 'inr'): Promise<MarketData[]> => {
-  // Using mock data for stocks since we don't have real-time NSE data
-  return INDIAN_STOCKS.map(stock => generateMockData(stock.symbol, stock.name));
+  return INDIAN_STOCKS.map((stock, index) => ({
+    id: stock.symbol.toLowerCase(),
+    symbol: stock.bseCode, // Use BSE code for TradingView widget
+    name: stock.name,
+    current_price: 0,
+    price_change_percentage_24h: 0,
+    market_cap: 0,
+    circulating_supply: 0,
+    total_volume: 0,
+    market_cap_rank: index + 1
+  }));
 };
 
 export const useMarketData = () => {
@@ -131,7 +134,7 @@ export const useMarketData = () => {
   return useQuery({
     queryKey: ["marketData", currency],
     queryFn: () => fetchMarketData(currency),
-    refetchInterval: 10000,
+    refetchInterval: 10000, // Refresh every 10 seconds
     staleTime: 5000,
     retry: 1,
   });

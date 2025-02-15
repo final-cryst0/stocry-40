@@ -17,7 +17,7 @@ export function TradingViewWidget({ symbol, isStock = false }: TradingViewWidget
       if (window.TradingView && container.current) {
         new window.TradingView.widget({
           autosize: true,
-          symbol: isStock ? `NSE:${symbol}` : `BINANCE:${symbol}USDT`,
+          symbol: isStock ? `BSE:${symbol}` : `BINANCE:${symbol}USDT`,
           interval: "D",
           timezone: "Asia/Kolkata",
           theme: "dark",
@@ -27,7 +27,6 @@ export function TradingViewWidget({ symbol, isStock = false }: TradingViewWidget
           enable_publishing: false,
           allow_symbol_change: true,
           container_id: container.current.id,
-          hide_side_toolbar: false,
           studies: [
             "MASimple@tv-basicstudies",
             "RSI@tv-basicstudies"
@@ -35,6 +34,13 @@ export function TradingViewWidget({ symbol, isStock = false }: TradingViewWidget
           show_popup_button: true,
           popup_width: "1000",
           popup_height: "650",
+          withdateranges: true,
+          allow_symbol_change: true,
+          details: true,
+          hotlist: true,
+          calendar: true,
+          width: "100%",
+          height: "600"
         });
       }
     };

@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useMarketStore } from "@/stores/marketStore";
 
 const BINANCE_API_BASE = 'https://api.binance.com/api/v3';
-const ALPHA_VANTAGE_API_KEY = 'demo'; // Using demo key for testing
 
 interface MarketData {
   id: string;
@@ -18,16 +17,16 @@ interface MarketData {
 
 // Top Indian stocks with BSE symbols
 const INDIAN_STOCKS = [
-  { symbol: 'RELIANCE.BSE', name: 'Reliance Industries', bseCode: '500325' },
-  { symbol: 'TCS.BSE', name: 'Tata Consultancy Services', bseCode: '532540' },
-  { symbol: 'HDFCBANK.BSE', name: 'HDFC Bank', bseCode: '500180' },
-  { symbol: 'INFY.BSE', name: 'Infosys', bseCode: '500209' },
-  { symbol: 'HINDUNILVR.BSE', name: 'Hindustan Unilever', bseCode: '500696' },
-  { symbol: 'ICICIBANK.BSE', name: 'ICICI Bank', bseCode: '532174' },
-  { symbol: 'SBIN.BSE', name: 'State Bank of India', bseCode: '500112' },
-  { symbol: 'BHARTIARTL.BSE', name: 'Bharti Airtel', bseCode: '532454' },
-  { symbol: 'ITC.BSE', name: 'ITC', bseCode: '500875' },
-  { symbol: 'KOTAKBANK.BSE', name: 'Kotak Mahindra Bank', bseCode: '500247' }
+  { symbol: 'RELIANCE', name: 'Reliance Industries', bseCode: '500325' },
+  { symbol: 'TCS', name: 'Tata Consultancy Services', bseCode: '532540' },
+  { symbol: 'HDFCBANK', name: 'HDFC Bank', bseCode: '500180' },
+  { symbol: 'INFY', name: 'Infosys', bseCode: '500209' },
+  { symbol: 'HINDUNILVR', name: 'Hindustan Unilever', bseCode: '500696' },
+  { symbol: 'ICICIBANK', name: 'ICICI Bank', bseCode: '532174' },
+  { symbol: 'SBIN', name: 'State Bank of India', bseCode: '500112' },
+  { symbol: 'BHARTIARTL', name: 'Bharti Airtel', bseCode: '532454' },
+  { symbol: 'ITC', name: 'ITC', bseCode: '500875' },
+  { symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank', bseCode: '500247' }
 ];
 
 const CRYPTO_PAIRS = [
@@ -115,71 +114,18 @@ const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> 
   }
 };
 
-const fetchStockPrice = async (symbol: string) => {
-  try {
-    const response = await fetch(
-      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${ALPHA_VANTAGE_API_KEY}`
-    );
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    if (data['Global Quote']) {
-      const quote = data['Global Quote'];
-      return {
-        current_price: parseFloat(quote['05. price']),
-        price_change_percentage_24h: parseFloat(quote['10. change percent'].replace('%', '')),
-        market_cap: 0, // Alpha Vantage free tier doesn't provide market cap
-        total_volume: parseFloat(quote['06. volume'])
-      };
-    } else {
-      console.error('Invalid response format:', data);
-      return null;
-    }
-  } catch (error) {
-    console.error(`Error fetching stock price for ${symbol}:`, error);
-    return null;
-  }
-};
-
 const fetchStockData = async (currency: string = 'inr'): Promise<MarketData[]> => {
-  try {
-    // Add delay between requests to comply with API rate limits
-    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-    
-    const results: MarketData[] = [];
-    
-    for (const stock of INDIAN_STOCKS) {
-      const priceData = await fetchStockPrice(stock.symbol);
-      
-      if (priceData) {
-        results.push({
-          id: stock.symbol.toLowerCase(),
-          symbol: stock.bseCode,
-          name: stock.name,
-          current_price: priceData.current_price,
-          price_change_percentage_24h: priceData.price_change_percentage_24h,
-          market_cap: priceData.market_cap,
-          circulating_supply: 0,
-          total_volume: priceData.total_volume,
-          market_cap_rank: 0
-        });
-      } else {
-        console.error(`Failed to fetch data for ${stock.symbol}`);
-      }
-      
-      // Add delay between requests to avoid rate limiting
-      await delay(1000);
-    }
-    
-    return results;
-  } catch (error) {
-    console.error('Error fetching stock data:', error);
-    throw error;
-  }
+  return INDIAN_STOCKS.map((stock, index) => ({
+    id: stock.symbol.toLowerCase(),
+    symbol: stock.bseCode, // Use BSE code for TradingView widget
+    name: stock.name,
+    current_price: 0,
+    price_change_percentage_24h: 0,
+    market_cap: 0,
+    circulating_supply: 0,
+    total_volume: 0,
+    market_cap_rank: index + 1
+  }));
 };
 
 export const useMarketData = () => {
@@ -198,8 +144,8 @@ export const useStockData = () => {
   return useQuery({
     queryKey: ["stockData", currency],
     queryFn: () => fetchStockData(currency),
-    refetchInterval: 60000, // Reduced to 1 minute due to API rate limits
-    staleTime: 30000,
+    refetchInterval: 5000,
+    staleTime: 2000,
     retry: 1,
   });
 };

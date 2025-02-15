@@ -15,7 +15,7 @@ interface MarketData {
   market_cap_rank: number;
 }
 
-// Top Indian stocks with BSE symbols
+// Top Indian stocks with NSE symbols
 const INDIAN_STOCKS = [
   { symbol: 'RELIANCE', name: 'Reliance Industries', bseCode: '500325' },
   { symbol: 'TCS', name: 'Tata Consultancy Services', bseCode: '532540' },
@@ -42,20 +42,23 @@ const CRYPTO_PAIRS = [
   { symbol: 'SHIBUSDT', displaySymbol: 'SHIB', name: 'Shiba Inu' }
 ];
 
-// Fetch latest USD to INR exchange rate from Binance
+// Function to fetch USD to INR conversion rate
 const fetchUSDINRRate = async () => {
   try {
-    const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTBIDR');
+    // Using Binance USDT/BUSD pair as a stable reference
+    const response = await fetch(`${BINANCE_API_BASE}/ticker/price?symbol=USDTBUSD`);
     const data = await response.json();
-    // Using USDT-BIDR as a proxy, then dividing by 14500 (approximate IDR/INR rate)
-    return parseFloat(data.price) / 14500;
+    // Approximate INR rate based on current market conditions
+    // Using a fixed multiplier as this is for demonstration
+    return parseFloat(data.price) * 82.5; // Approximate USD/INR rate
   } catch (error) {
     console.error('Error fetching USD/INR rate:', error);
-    return 83; // Fallback rate
+    return 82.5; // Fallback fixed rate if API fails
   }
 };
 
-const fetchBinancePrice = async (symbol: string) => {
+// Function to fetch cryptocurrency price from Binance
+const fetchCryptoPrice = async (symbol: string) => {
   try {
     console.log(`Fetching price for ${symbol}`);
     const response = await fetch(`${BINANCE_API_BASE}/ticker/24hr?symbol=${symbol}`);
@@ -69,6 +72,7 @@ const fetchBinancePrice = async (symbol: string) => {
       current_price: parseFloat(data.lastPrice),
       price_change_percentage_24h: parseFloat(data.priceChangePercent),
       total_volume: parseFloat(data.volume),
+      market_cap: parseFloat(data.lastPrice) * parseFloat(data.volume), // Approximate market cap
       high_24h: parseFloat(data.highPrice),
       low_24h: parseFloat(data.lowPrice)
     };
@@ -78,31 +82,34 @@ const fetchBinancePrice = async (symbol: string) => {
   }
 };
 
+// Main function to fetch market data
 const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> => {
   try {
     const usdInrRate = await fetchUSDINRRate();
     console.log('Current USD/INR rate:', usdInrRate);
 
     const cryptoPromises = CRYPTO_PAIRS.map(async (pair) => {
-      const priceData = await fetchBinancePrice(pair.symbol);
+      const priceData = await fetchCryptoPrice(pair.symbol);
       
       if (!priceData) {
         console.error(`Failed to fetch data for ${pair.symbol}`);
         return null;
       }
 
-      const priceInINR = priceData.current_price * usdInrRate;
+      const priceInLocalCurrency = currency.toLowerCase() === 'usd' 
+        ? priceData.current_price 
+        : priceData.current_price * usdInrRate;
 
       return {
         id: pair.displaySymbol.toLowerCase(),
         symbol: pair.displaySymbol,
         name: pair.name,
-        current_price: priceInINR,
+        current_price: priceInLocalCurrency,
         price_change_percentage_24h: priceData.price_change_percentage_24h,
-        market_cap: priceData.total_volume * priceInINR,
-        circulating_supply: 0,
+        market_cap: priceData.market_cap * (currency.toLowerCase() === 'usd' ? 1 : usdInrRate),
+        circulating_supply: 0, // Would need additional API call to get this
         total_volume: priceData.total_volume,
-        market_cap_rank: 0
+        market_cap_rank: 0 // Would need additional API call to get this
       };
     });
 
@@ -114,27 +121,29 @@ const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> 
   }
 };
 
+// Mock function for stock data (since we need authenticated access for real data)
 const fetchStockData = async (currency: string = 'inr'): Promise<MarketData[]> => {
   return INDIAN_STOCKS.map((stock, index) => ({
     id: stock.symbol.toLowerCase(),
-    symbol: stock.bseCode, // Use BSE code for TradingView widget
+    symbol: stock.bseCode,
     name: stock.name,
-    current_price: 0,
-    price_change_percentage_24h: 0,
-    market_cap: 0,
-    circulating_supply: 0,
-    total_volume: 0,
+    current_price: Math.random() * 1000 * (currency.toLowerCase() === 'usd' ? 1 : 82.5),
+    price_change_percentage_24h: (Math.random() - 0.5) * 5,
+    market_cap: Math.random() * 1000000 * (currency.toLowerCase() === 'usd' ? 1 : 82.5),
+    circulating_supply: Math.random() * 1000000,
+    total_volume: Math.random() * 100000,
     market_cap_rank: index + 1
   }));
 };
 
+// React Query hooks
 export const useMarketData = () => {
   const { currency } = useMarketStore();
   return useQuery({
     queryKey: ["marketData", currency],
     queryFn: () => fetchMarketData(currency),
-    refetchInterval: 5000, // Refresh every 5 seconds for more frequent updates
-    staleTime: 2000,
+    refetchInterval: 10000, // Refresh every 10 seconds
+    staleTime: 5000,
     retry: 1,
   });
 };
@@ -144,8 +153,8 @@ export const useStockData = () => {
   return useQuery({
     queryKey: ["stockData", currency],
     queryFn: () => fetchStockData(currency),
-    refetchInterval: 5000,
-    staleTime: 2000,
+    refetchInterval: 10000,
+    staleTime: 5000,
     retry: 1,
   });
 };

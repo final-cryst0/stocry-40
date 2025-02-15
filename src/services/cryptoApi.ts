@@ -114,18 +114,61 @@ const fetchMarketData = async (currency: string = 'inr'): Promise<MarketData[]> 
   }
 };
 
+const fetchStockPrice = async (symbol: string) => {
+  try {
+    // We'll use Yahoo Finance API for BSE stock prices
+    const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}.BO?interval=1d&range=1d`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const quote = data.chart.result[0].meta;
+    const indicators = data.chart.result[0].indicators.quote[0];
+    const lastIndex = indicators.close.length - 1;
+    
+    return {
+      current_price: quote.regularMarketPrice,
+      price_change_percentage_24h: ((quote.regularMarketPrice - quote.previousClose) / quote.previousClose) * 100,
+      market_cap: quote.marketCap || 0,
+      total_volume: indicators.volume[lastIndex] || 0
+    };
+  } catch (error) {
+    console.error(`Error fetching stock price for ${symbol}:`, error);
+    return null;
+  }
+};
+
 const fetchStockData = async (currency: string = 'inr'): Promise<MarketData[]> => {
-  return INDIAN_STOCKS.map((stock, index) => ({
-    id: stock.symbol.toLowerCase(),
-    symbol: stock.bseCode, // Use BSE code for TradingView widget
-    name: stock.name,
-    current_price: 0,
-    price_change_percentage_24h: 0,
-    market_cap: 0,
-    circulating_supply: 0,
-    total_volume: 0,
-    market_cap_rank: index + 1
-  }));
+  try {
+    const stockPromises = INDIAN_STOCKS.map(async (stock) => {
+      const priceData = await fetchStockPrice(stock.symbol);
+      
+      if (!priceData) {
+        console.error(`Failed to fetch data for ${stock.symbol}`);
+        return null;
+      }
+
+      return {
+        id: stock.symbol.toLowerCase(),
+        symbol: stock.bseCode,
+        name: stock.name,
+        current_price: priceData.current_price,
+        price_change_percentage_24h: priceData.price_change_percentage_24h,
+        market_cap: priceData.market_cap,
+        circulating_supply: 0,
+        total_volume: priceData.total_volume,
+        market_cap_rank: 0
+      };
+    });
+
+    const results = await Promise.all(stockPromises);
+    return results.filter((result): result is MarketData => result !== null);
+  } catch (error) {
+    console.error('Error fetching stock data:', error);
+    throw error;
+  }
 };
 
 export const useMarketData = () => {

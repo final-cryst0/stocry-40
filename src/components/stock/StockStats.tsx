@@ -88,16 +88,16 @@ export function StockStats({
         <CardContent>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Market Sentiment</span>
-              <span className="font-medium">Bullish</span>
+              <span className="text-sm text-muted-foreground">Fear & Greed Index</span>
+              <span className="font-medium">75 (Greed)</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Volatility</span>
               <span className="font-medium">Medium</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Sector Performance</span>
-              <span className="font-medium">+3.2%</span>
+              <span className="text-sm text-muted-foreground">Dominance</span>
+              <span className="font-medium">42.3%</span>
             </div>
           </div>
         </CardContent>

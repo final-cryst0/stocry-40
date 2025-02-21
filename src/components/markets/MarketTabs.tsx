@@ -19,7 +19,7 @@ export function MarketTabs({ children, defaultValue }: MarketTabsProps) {
               "data-[state=active]:text-foreground data-[state=active]:shadow-lg"
             )}
           >
-            Cryptocurrencies
+            Crypto
           </TabsTrigger>
           <TabsTrigger 
             value="stocks" 

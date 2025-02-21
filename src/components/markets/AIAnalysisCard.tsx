@@ -78,21 +78,25 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
   return (
     <div className="space-y-6">
       <Card className="w-full hover:shadow-lg transition-shadow">
-        <CardHeader>
-          <div className="flex items-center gap-2">
+        <CardHeader className="text-center">
+          <div className="flex items-center justify-center gap-2">
             <Brain className="w-6 h-6" />
-            <CardTitle className="text-2xl font-bold">
-              Analysis with AI
+            <CardTitle className="text-2xl font-bold group">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 hover:to-primary transition-colors duration-300">
+                Analysis with AI
+              </span>
             </CardTitle>
           </div>
-          <CardDescription className="mt-2">
-            Unlock deep market insights with our AI that analyzes patterns, trends, and market sentiment.
-            Get real-time predictions and comprehensive analysis for both crypto and stocks.
+          <CardDescription className="mt-2 max-w-2xl mx-auto group">
+            <span className="transition-opacity duration-300 group-hover:opacity-90">
+              Unlock deep market insights with our AI that analyzes patterns, trends, and market sentiment.
+              Get real-time predictions and comprehensive analysis for both crypto and stocks.
+            </span>
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex justify-center">
           {showSymbolInput ? (
-            <form onSubmit={handleSymbolSubmit} className="space-y-4">
+            <form onSubmit={handleSymbolSubmit} className="space-y-4 w-full max-w-2xl">
               <div className="flex flex-col space-y-2">
                 <div className="flex gap-2">
                   <Input
@@ -110,7 +114,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
               </div>
             </form>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-4 w-full max-w-2xl">
               <Button variant="outline" onClick={handleBack} className="mb-4">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back

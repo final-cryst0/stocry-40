@@ -16,15 +16,11 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
     type: 'technical' | 'sentiment' | 'prediction' | null;
     symbol: string;
   }>({ type: null, symbol: '' });
-  const [showSymbolInput, setShowSymbolInput] = useState(false);
+  const [showSymbolInput, setShowSymbolInput] = useState(true);
   const [symbol, setSymbol] = useState('');
   const [analysisResult, setAnalysisResult] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-
-  const handleAnalysisClick = () => {
-    setShowSymbolInput(true);
-  };
 
   const queryStackAI = async (data: any) => {
     try {
@@ -76,7 +72,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
 
   const handleBack = () => {
     setActiveAnalysis({ type: null, symbol: '' });
-    setShowSymbolInput(false);
+    setShowSymbolInput(true);
     setSymbol('');
     setAnalysisResult('');
   };
@@ -115,7 +111,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
                 </div>
               </div>
             </form>
-          ) : activeAnalysis.type ? (
+          ) : (
             <div className="space-y-4">
               <Button variant="outline" onClick={handleBack} className="mb-4">
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -131,16 +127,6 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
                   <p className="whitespace-pre-wrap">{analysisResult}</p>
                 )}
               </div>
-            </div>
-          ) : (
-            <div className="flex justify-center">
-              <Button 
-                size="lg"
-                className="w-full md:w-auto"
-                onClick={handleAnalysisClick}
-              >
-                Analysis with AI <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
             </div>
           )}
         </CardContent>

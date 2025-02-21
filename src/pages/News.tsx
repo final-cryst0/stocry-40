@@ -1,19 +1,25 @@
 
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNewsData } from "@/hooks/useNewsData";
 import { NewsSearch } from "@/components/news/NewsSearch";
 import { CategoryFilter } from "@/components/news/CategoryFilter";
 import { NewsList } from "@/components/news/NewsList";
 import { Card, CardContent } from "@/components/ui/card";
+import { useNewsFilter } from "@/hooks/useNewsFilter";
 
 export default function News() {
   const { data: news, isLoading, error } = useNewsData();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState("all");
+  const {
+    searchTerm,
+    setSearchTerm,
+    selectedCategories,
+    handleCategoryChange,
+    activeTab,
+    setActiveTab,
+    filteredNews
+  } = useNewsFilter(news);
 
   const categories = [
     "Cryptocurrency",
@@ -34,34 +40,6 @@ export default function News() {
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
-
-  const filteredNews = news?.filter((item) => {
-    const searchLower = searchTerm.toLowerCase();
-    const hasSearchMatch = searchTerm === '' || 
-      item.title.toLowerCase().includes(searchLower) ||
-      item.description.toLowerCase().includes(searchLower) ||
-      item.source.toLowerCase().includes(searchLower) ||
-      item.categories.some(cat => cat.toLowerCase().includes(searchLower));
-
-    const hasCategory = selectedCategories.length === 0 ||
-      selectedCategories.some(cat => 
-        item.categories.some(itemCat => 
-          itemCat.toLowerCase() === cat.toLowerCase()
-        )
-      );
-
-    const tabFilter = activeTab === "all" || 
-      (activeTab === "crypto" && item.categories.some(cat => cat === "Cryptocurrency")) ||
-      (activeTab === "stocks" && item.categories.some(cat => cat === "Stocks"));
-
-    return hasSearchMatch && hasCategory && tabFilter;
-  });
-
-  const handleCategoryChange = (category: string, checked: boolean) => {
-    setSelectedCategories(prev =>
-      checked ? [...prev, category] : prev.filter(c => c !== category)
-    );
   };
 
   return (

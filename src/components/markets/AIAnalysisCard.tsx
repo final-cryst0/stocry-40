@@ -60,7 +60,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
           "user_id": "user_analysis",
           "in-0": `give analysis of ${symbol} stock`
         });
-        setAnalysisResult(response["out-0"] || "Analysis not available");
+        setAnalysisResult(response["out-0"]);
         onAnalysis('technical', symbol.toUpperCase());
       } catch (error) {
         console.error('Error:', error);

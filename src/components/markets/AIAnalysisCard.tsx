@@ -26,7 +26,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
     setShowSymbolInput(true);
   };
 
-  const queryStackAI = async (symbol: string) => {
+  const queryStackAI = async (data: any) => {
     try {
       setLoading(true);
       const response = await fetch(
@@ -37,14 +37,11 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
             'Content-Type': 'application/json'
           },
           method: "POST",
-          body: JSON.stringify({
-            "user_id": "user_analysis",
-            "in-0": `give analysis of ${symbol} stock`
-          }),
+          body: JSON.stringify(data),
         }
       );
       const result = await response.json();
-      setAnalysisResult(result["out-0"] || "Analysis not available");
+      return result;
     } catch (error) {
       console.error('Error fetching analysis:', error);
       toast({
@@ -52,8 +49,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
         description: "Failed to fetch analysis. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
+      throw error;
     }
   };
 
@@ -62,8 +58,19 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
     if (symbol) {
       setShowSymbolInput(false);
       setActiveAnalysis({ type: 'technical', symbol: symbol.toUpperCase() });
-      await queryStackAI(symbol.toUpperCase());
-      onAnalysis('technical', symbol.toUpperCase());
+      try {
+        setLoading(true);
+        const response = await queryStackAI({
+          "user_id": "user_analysis",
+          "in-0": `give analysis of ${symbol} stock`
+        });
+        setAnalysisResult(response["out-0"] || "Analysis not available");
+        onAnalysis('technical', symbol.toUpperCase());
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -91,7 +98,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
             <form onSubmit={handleSymbolSubmit} className="space-y-4">
               <div className="flex flex-col space-y-2">
                 <label htmlFor="symbol" className="text-sm font-medium">
-                  Enter Symbol (e.g., RELIANCE, TCS)
+                  Enter symbol...
                 </label>
                 <div className="flex gap-2">
                   <Input

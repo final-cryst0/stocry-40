@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ArrowRight, ArrowLeft } from "lucide-react";
+import { ArrowRight, ArrowLeft, Brain } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,10 +79,13 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
     <div className="space-y-6">
       <Card className="w-full hover:shadow-lg transition-shadow">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">
-            Analysis with AI
-          </CardTitle>
-          <CardDescription>
+          <div className="flex items-center gap-2">
+            <Brain className="w-6 h-6" />
+            <CardTitle className="text-2xl font-bold">
+              Analysis with AI
+            </CardTitle>
+          </div>
+          <CardDescription className="mt-2">
             Get comprehensive market analysis powered by our advanced AI system.
           </CardDescription>
         </CardHeader>

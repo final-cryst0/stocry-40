@@ -90,6 +90,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
           <CardDescription className="mt-2 max-w-2xl mx-auto group">
             <span className="transition-opacity duration-300 group-hover:opacity-90">
               Unlock deep market insights with our AI that analyzes patterns, trends, and market sentiment.
+              <br className="my-2" />
               Get real-time predictions and comprehensive analysis for both crypto and stocks.
             </span>
           </CardDescription>

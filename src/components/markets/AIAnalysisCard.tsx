@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { ArrowRight, ArrowLeft, Brain, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -85,7 +86,8 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
             </CardTitle>
           </div>
           <CardDescription className="mt-2">
-            Get comprehensive market analysis powered by our advanced AI system.
+            Unlock deep market insights with our AI that analyzes patterns, trends, and market sentiment.
+            Get real-time predictions and comprehensive analysis for both crypto and stocks.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -97,7 +99,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
                     id="symbol"
                     value={symbol}
                     onChange={(e) => setSymbol(e.target.value)}
-                    placeholder="Enter symbol..."
+                    placeholder="Enter Crypto or Stock to Analyze"
                     className="flex-1"
                   />
                   <Button type="submit" className="gap-2 bg-background text-foreground hover:bg-accent border">

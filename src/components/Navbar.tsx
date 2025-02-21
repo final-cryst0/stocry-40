@@ -15,7 +15,7 @@ export function Navbar({ onCurrencyChange }: NavbarProps) {
   const [showSearch, setShowSearch] = useState(false);
   const { currency } = useMarketStore();
   const [displayText, setDisplayText] = useState('');
-  const fullText = 'Cryst0';
+  const fullText = 'Crypt0';
   const [isTyping, setIsTyping] = useState(true);
 
   useEffect(() => {
@@ -56,6 +56,7 @@ export function Navbar({ onCurrencyChange }: NavbarProps) {
         <h1 className="text-4xl font-bold text-center relative">
           <span className="text-primary">
             {displayText}
+            <span className="animate-pulse inline-block ml-[2px] -translate-y-[2px]">|</span>
           </span>
         </h1>
       </div>

@@ -1,4 +1,3 @@
-
 import { Coins, BarChart, Activity } from "lucide-react";
 import { MarketOverviewCard } from "./MarketOverviewCard";
 import { useMarketData } from "@/services/cryptoApi";
@@ -54,7 +53,7 @@ export function MarketOverview({ onAIAnalysis }: MarketOverviewProps) {
         isIncrease={true}
       />
       <div className="md:col-span-2 lg:col-span-3">
-        <AIAnalysisCard onAIAnalysis={onAIAnalysis} />
+        <AIAnalysisCard onAnalysis={onAIAnalysis} />
       </div>
     </div>
   );

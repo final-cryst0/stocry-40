@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { ArrowRight, ArrowLeft, Brain } from "lucide-react";
+import { ArrowRight, ArrowLeft, Brain, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,9 +92,6 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
           {showSymbolInput ? (
             <form onSubmit={handleSymbolSubmit} className="space-y-4">
               <div className="flex flex-col space-y-2">
-                <label htmlFor="symbol" className="text-sm font-medium">
-                  Enter symbol...
-                </label>
                 <div className="flex gap-2">
                   <Input
                     id="symbol"
@@ -104,9 +100,9 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
                     placeholder="Enter symbol..."
                     className="flex-1"
                   />
-                  <Button type="submit">Analyze</Button>
-                  <Button type="button" variant="outline" onClick={handleBack}>
-                    Back
+                  <Button type="submit" className="gap-2 bg-background text-foreground hover:bg-accent border">
+                    <Sparkles className="w-4 h-4" />
+                    Generate AI Analysis
                   </Button>
                 </div>
               </div>

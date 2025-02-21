@@ -15,7 +15,7 @@ export function Navbar({ onCurrencyChange }: NavbarProps) {
   const [showSearch, setShowSearch] = useState(false);
   const { currency } = useMarketStore();
   const [displayText, setDisplayText] = useState('');
-  const fullText = 'Crypt0';
+  const fullText = 'Cryst0';
   const [isTyping, setIsTyping] = useState(true);
 
   useEffect(() => {

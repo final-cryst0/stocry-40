@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMarketStore } from "@/stores/marketStore";
 
 interface NavbarProps {
@@ -14,13 +14,49 @@ interface NavbarProps {
 export function Navbar({ onCurrencyChange }: NavbarProps) {
   const [showSearch, setShowSearch] = useState(false);
   const { currency } = useMarketStore();
+  const [displayText, setDisplayText] = useState('');
+  const fullText = 'Crypt0';
+  const [isTyping, setIsTyping] = useState(true);
+
+  useEffect(() => {
+    let currentIndex = 0;
+    let isDeleting = false;
+    let timeoutId: NodeJS.Timeout;
+
+    const animateText = () => {
+      if (isDeleting) {
+        setDisplayText(fullText.substring(0, currentIndex - 1));
+        currentIndex--;
+        if (currentIndex <= 0) {
+          isDeleting = false;
+          timeoutId = setTimeout(animateText, 500); // Pause before typing again
+          return;
+        }
+      } else {
+        setDisplayText(fullText.substring(0, currentIndex + 1));
+        currentIndex++;
+        if (currentIndex === fullText.length) {
+          isDeleting = true;
+          timeoutId = setTimeout(animateText, 1000); // Pause at full text
+          return;
+        }
+      }
+
+      timeoutId = setTimeout(animateText, isDeleting ? 100 : 150);
+    };
+
+    timeoutId = setTimeout(animateText, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, []);
 
   return (
     <>
       <div className="w-full bg-background pt-4 pb-2">
         <h1 className="text-4xl font-bold text-center relative">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-foreground to-primary animate-[shine_3s_linear_infinite] bg-[length:200%_100%]">
-            cryst0
+          <span className="text-primary">
+            {displayText}
+            <span className="animate-pulse inline-block ml-[2px] -translate-y-[2px]">|</span>
           </span>
         </h1>
       </div>

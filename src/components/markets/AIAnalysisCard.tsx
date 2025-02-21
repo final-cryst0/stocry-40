@@ -18,17 +18,51 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
   }>({ type: null, symbol: '' });
   const [showSymbolInput, setShowSymbolInput] = useState(false);
   const [symbol, setSymbol] = useState('');
+  const [analysisResult, setAnalysisResult] = useState<string>('');
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const handleAnalysisClick = () => {
     setShowSymbolInput(true);
   };
 
-  const handleSymbolSubmit = (e: React.FormEvent) => {
+  const queryStackAI = async (symbol: string) => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        "https://api.stack-ai.com/inference/v0/run/29b2f1c6-2e20-4afb-83c8-afa5afe73a1c/67b85058e1500b3f2d600b8a",
+        {
+          headers: {
+            'Authorization': 'Bearer 59f6ba42-bde8-4bc2-8812-d764fd3eb299',
+            'Content-Type': 'application/json'
+          },
+          method: "POST",
+          body: JSON.stringify({
+            "user_id": "user_analysis",
+            "in-0": `give analysis of ${symbol} stock`
+          }),
+        }
+      );
+      const result = await response.json();
+      setAnalysisResult(result["out-0"] || "Analysis not available");
+    } catch (error) {
+      console.error('Error fetching analysis:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch analysis. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSymbolSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (symbol) {
       setShowSymbolInput(false);
       setActiveAnalysis({ type: 'technical', symbol: symbol.toUpperCase() });
+      await queryStackAI(symbol.toUpperCase());
       onAnalysis('technical', symbol.toUpperCase());
     }
   };
@@ -37,6 +71,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
     setActiveAnalysis({ type: null, symbol: '' });
     setShowSymbolInput(false);
     setSymbol('');
+    setAnalysisResult('');
   };
 
   return (
@@ -56,7 +91,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
             <form onSubmit={handleSymbolSubmit} className="space-y-4">
               <div className="flex flex-col space-y-2">
                 <label htmlFor="symbol" className="text-sm font-medium">
-                  Enter Symbol (e.g., BTC, RELIANCE)
+                  Enter Symbol (e.g., RELIANCE, TCS)
                 </label>
                 <div className="flex gap-2">
                   <Input
@@ -74,11 +109,22 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
               </div>
             </form>
           ) : activeAnalysis.type ? (
-            <AIAnalysisResult 
-              type={activeAnalysis.type} 
-              symbol={activeAnalysis.symbol}
-              onBack={handleBack}
-            />
+            <div className="space-y-4">
+              <Button variant="outline" onClick={handleBack} className="mb-4">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+              <div className="p-4 rounded-lg border bg-muted/50">
+                <h3 className="font-semibold mb-2">Analysis for {activeAnalysis.symbol}</h3>
+                {loading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : (
+                  <p className="whitespace-pre-wrap">{analysisResult}</p>
+                )}
+              </div>
+            </div>
           ) : (
             <div className="flex justify-center">
               <Button 

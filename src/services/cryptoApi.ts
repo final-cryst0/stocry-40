@@ -24,52 +24,54 @@ export const useMarketData = () => {
     }
   };
 
-  // Mock data as fallback
   const mockCryptoData: CryptoData[] = [
-    {
-      id: "bitcoin",
-      symbol: "BTC",
-      name: "Bitcoin",
-      current_price: 65000,
-      price_change_percentage_24h: 2.5,
-      market_cap: 1200000000000,
-      total_volume: 30000000000,
-    },
-    {
-      id: "ethereum",
-      symbol: "ETH",
-      name: "Ethereum",
-      current_price: 3500,
-      price_change_percentage_24h: 1.8,
-      market_cap: 420000000000,
-      total_volume: 15000000000,
-    },
+    { id: "bitcoin", symbol: "BTC", name: "Bitcoin", current_price: 65000, price_change_percentage_24h: 2.5, market_cap: 1200000000000, total_volume: 30000000000 },
+    { id: "ethereum", symbol: "ETH", name: "Ethereum", current_price: 3500, price_change_percentage_24h: 1.8, market_cap: 420000000000, total_volume: 15000000000 },
+    { id: "binancecoin", symbol: "BNB", name: "Binance Coin", current_price: 450, price_change_percentage_24h: -0.5, market_cap: 75000000000, total_volume: 2000000000 },
+    { id: "solana", symbol: "SOL", name: "Solana", current_price: 120, price_change_percentage_24h: 3.2, market_cap: 50000000000, total_volume: 1500000000 },
+    { id: "cardano", symbol: "ADA", name: "Cardano", current_price: 0.65, price_change_percentage_24h: 1.1, market_cap: 25000000000, total_volume: 800000000 },
+    { id: "ripple", symbol: "XRP", name: "Ripple", current_price: 0.55, price_change_percentage_24h: -1.2, market_cap: 30000000000, total_volume: 1200000000 },
+    { id: "polkadot", symbol: "DOT", name: "Polkadot", current_price: 7.8, price_change_percentage_24h: 2.8, market_cap: 10000000000, total_volume: 500000000 },
+    { id: "dogecoin", symbol: "DOGE", name: "Dogecoin", current_price: 0.08, price_change_percentage_24h: -0.9, market_cap: 12000000000, total_volume: 600000000 },
+    { id: "avalanche", symbol: "AVAX", name: "Avalanche", current_price: 35, price_change_percentage_24h: 4.2, market_cap: 12500000000, total_volume: 700000000 },
+    { id: "chainlink", symbol: "LINK", name: "Chainlink", current_price: 18, price_change_percentage_24h: 1.5, market_cap: 9000000000, total_volume: 450000000 },
+    { id: "polygon", symbol: "MATIC", name: "Polygon", current_price: 0.85, price_change_percentage_24h: 2.1, market_cap: 8500000000, total_volume: 400000000 },
+    { id: "uniswap", symbol: "UNI", name: "Uniswap", current_price: 7.2, price_change_percentage_24h: -1.8, market_cap: 5500000000, total_volume: 300000000 },
+    { id: "stellar", symbol: "XLM", name: "Stellar", current_price: 0.12, price_change_percentage_24h: 0.5, market_cap: 4000000000, total_volume: 200000000 },
+    { id: "algorand", symbol: "ALGO", name: "Algorand", current_price: 0.18, price_change_percentage_24h: 1.2, market_cap: 2000000000, total_volume: 100000000 },
+    { id: "cosmos", symbol: "ATOM", name: "Cosmos", current_price: 8.5, price_change_percentage_24h: 3.1, market_cap: 3500000000, total_volume: 150000000 },
+    { id: "near", symbol: "NEAR", name: "NEAR Protocol", current_price: 2.8, price_change_percentage_24h: 2.4, market_cap: 3000000000, total_volume: 120000000 },
+    { id: "fantom", symbol: "FTM", name: "Fantom", current_price: 0.45, price_change_percentage_24h: 5.2, market_cap: 1500000000, total_volume: 80000000 },
+    { id: "tezos", symbol: "XTZ", name: "Tezos", current_price: 1.2, price_change_percentage_24h: -0.8, market_cap: 1200000000, total_volume: 60000000 },
+    { id: "aave", symbol: "AAVE", name: "Aave", current_price: 95, price_change_percentage_24h: 1.9, market_cap: 1400000000, total_volume: 70000000 },
+    { id: "theta", symbol: "THETA", name: "Theta Network", current_price: 0.95, price_change_percentage_24h: 0.7, market_cap: 1100000000, total_volume: 50000000 }
   ];
 
-  // For now, return mock data until we implement real-time fetching
   return { data: mockCryptoData, isLoading: false };
 };
 
 export const useStockData = () => {
   const mockStockData: StockData[] = [
-    {
-      id: "RELIANCE",
-      symbol: "RELIANCE",
-      name: "Reliance Industries",
-      current_price: 2500,
-      price_change_percentage_24h: 1.2,
-      market_cap: 17000000000000,
-      total_volume: 500000000,
-    },
-    {
-      id: "TCS",
-      symbol: "TCS",
-      name: "Tata Consultancy Services",
-      current_price: 3800,
-      price_change_percentage_24h: -0.5,
-      market_cap: 14000000000000,
-      total_volume: 300000000,
-    },
+    { id: "RELIANCE", symbol: "RELIANCE", name: "Reliance Industries", current_price: 2500, price_change_percentage_24h: 1.2, market_cap: 17000000000000, total_volume: 500000000 },
+    { id: "TCS", symbol: "TCS", name: "Tata Consultancy Services", current_price: 3800, price_change_percentage_24h: -0.5, market_cap: 14000000000000, total_volume: 300000000 },
+    { id: "HDFCBANK", symbol: "HDFCBANK", name: "HDFC Bank", current_price: 1650, price_change_percentage_24h: 0.8, market_cap: 12000000000000, total_volume: 250000000 },
+    { id: "INFY", symbol: "INFY", name: "Infosys", current_price: 1450, price_change_percentage_24h: -1.2, market_cap: 6000000000000, total_volume: 150000000 },
+    { id: "HINDUNILVR", symbol: "HINDUNILVR", name: "Hindustan Unilever", current_price: 2450, price_change_percentage_24h: 0.3, market_cap: 5500000000000, total_volume: 120000000 },
+    { id: "ICICIBANK", symbol: "ICICIBANK", name: "ICICI Bank", current_price: 960, price_change_percentage_24h: 1.5, market_cap: 7000000000000, total_volume: 180000000 },
+    { id: "SBIN", symbol: "SBIN", name: "State Bank of India", current_price: 620, price_change_percentage_24h: 2.1, market_cap: 5500000000000, total_volume: 160000000 },
+    { id: "BHARTIARTL", symbol: "BHARTIARTL", name: "Bharti Airtel", current_price: 875, price_change_percentage_24h: -0.7, market_cap: 4800000000000, total_volume: 140000000 },
+    { id: "ITC", symbol: "ITC", name: "ITC", current_price: 420, price_change_percentage_24h: 0.9, market_cap: 5200000000000, total_volume: 150000000 },
+    { id: "KOTAKBANK", symbol: "KOTAKBANK", name: "Kotak Mahindra Bank", current_price: 1750, price_change_percentage_24h: -0.4, market_cap: 3500000000000, total_volume: 90000000 },
+    { id: "LT", symbol: "LT", name: "Larsen & Toubro", current_price: 2950, price_change_percentage_24h: 1.8, market_cap: 4100000000000, total_volume: 110000000 },
+    { id: "WIPRO", symbol: "WIPRO", name: "Wipro", current_price: 420, price_change_percentage_24h: -1.1, market_cap: 2300000000000, total_volume: 70000000 },
+    { id: "HCLTECH", symbol: "HCLTECH", name: "HCL Technologies", current_price: 1180, price_change_percentage_24h: 0.6, market_cap: 3200000000000, total_volume: 85000000 },
+    { id: "ASIANPAINT", symbol: "ASIANPAINT", name: "Asian Paints", current_price: 3150, price_change_percentage_24h: -0.3, market_cap: 3000000000000, total_volume: 80000000 },
+    { id: "MARUTI", symbol: "MARUTI", name: "Maruti Suzuki", current_price: 9800, price_change_percentage_24h: 1.4, market_cap: 2950000000000, total_volume: 75000000 },
+    { id: "AXISBANK", symbol: "AXISBANK", name: "Axis Bank", current_price: 960, price_change_percentage_24h: 0.8, market_cap: 2900000000000, total_volume: 73000000 },
+    { id: "TATAMOTORS", symbol: "TATAMOTORS", name: "Tata Motors", current_price: 780, price_change_percentage_24h: 2.3, market_cap: 2600000000000, total_volume: 68000000 },
+    { id: "SUNPHARMA", symbol: "SUNPHARMA", name: "Sun Pharma", current_price: 1120, price_change_percentage_24h: -0.5, market_cap: 2700000000000, total_volume: 70000000 },
+    { id: "BAJFINANCE", symbol: "BAJFINANCE", name: "Bajaj Finance", current_price: 6900, price_change_percentage_24h: 1.1, market_cap: 4150000000000, total_volume: 105000000 },
+    { id: "TATASTEEL", symbol: "TATASTEEL", name: "Tata Steel", current_price: 125, price_change_percentage_24h: 1.6, market_cap: 1500000000000, total_volume: 45000000 }
   ];
 
   return { data: mockStockData, isLoading: false };
@@ -82,8 +84,7 @@ export const getTechnicalAnalysis = async (symbol: string) => {
     );
     const data = await response.json();
     
-    // Calculate technical indicators
-    const prices = data.map((item: number[]) => item[4]); // closing prices
+    const prices = data.map((item: number[]) => item[4]);
     const avg = prices.reduce((a: number, b: number) => a + b, 0) / prices.length;
     const rsi = calculateRSI(prices);
     const trend = prices[prices.length - 1] > avg ? "Bullish" : "Bearish";
@@ -148,7 +149,6 @@ export const getPricePredictions = async (symbol: string) => {
   }
 };
 
-// Helper functions for technical analysis
 function calculateRSI(prices: number[]): number {
   const gains = [];
   const losses = [];

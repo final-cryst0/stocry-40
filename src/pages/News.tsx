@@ -44,17 +44,26 @@ export default function News() {
   };
 
   const filteredNews = news?.filter((item) => {
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategories.length === 0 ||
-                           selectedCategories.some(cat => 
-                             item.categories.map(c => c.toLowerCase()).includes(cat.toLowerCase())
-                           );
-    const matchesTab = activeTab === "all" || 
-                      (activeTab === "crypto" && item.categories.includes("Cryptocurrency")) ||
-                      (activeTab === "stocks" && item.categories.includes("Stocks"));
-    
-    return matchesSearch && matchesCategory && matchesTab;
+    // Optimized search function with better performance
+    const searchLower = searchTerm.toLowerCase();
+    const hasSearchMatch = searchTerm === '' || 
+      item.title.toLowerCase().includes(searchLower) ||
+      item.description.toLowerCase().includes(searchLower) ||
+      item.source.toLowerCase().includes(searchLower) ||
+      item.categories.some(cat => cat.toLowerCase().includes(searchLower));
+
+    const hasCategory = selectedCategories.length === 0 ||
+      selectedCategories.some(cat => 
+        item.categories.some(itemCat => 
+          itemCat.toLowerCase() === cat.toLowerCase()
+        )
+      );
+
+    const tabFilter = activeTab === "all" || 
+      (activeTab === "crypto" && item.categories.some(cat => cat === "Cryptocurrency")) ||
+      (activeTab === "stocks" && item.categories.some(cat => cat === "Stocks"));
+
+    return hasSearchMatch && hasCategory && tabFilter;
   });
 
   return (

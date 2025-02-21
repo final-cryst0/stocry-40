@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { ArrowRight, ArrowLeft, Brain, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -75,6 +74,12 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
     setAnalysisResult('');
   };
 
+  const formatAnalysisText = (text: string) => {
+    return text.split('*').map((part, index) => 
+      index % 2 === 1 ? <strong key={index}>{part}</strong> : part
+    );
+  };
+
   return (
     <div className="space-y-6">
       <Card className="w-full hover:shadow-lg transition-shadow">
@@ -127,7 +132,9 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                   </div>
                 ) : (
-                  <pre className="whitespace-pre-wrap break-words">{analysisResult}</pre>
+                  <div className="whitespace-pre-wrap break-words">
+                    {formatAnalysisText(analysisResult)}
+                  </div>
                 )}
               </div>
             </div>

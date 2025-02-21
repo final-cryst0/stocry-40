@@ -9,7 +9,7 @@ const generateMockStockNews = (count: number): NewsItem[] => {
     { symbol: 'AMZN', name: 'Amazon' }
   ];
 
-  return stockCompanies.map((company, index) => ({
+  return stockCompanies.slice(0, count).map((company, index) => ({
     id: `stock-${company.symbol}-${Date.now()}`,
     title: `${company.name} Stock Update: Market Analysis and Future Prospects`,
     description: `Latest market analysis shows promising trends for ${company.name}. Analysts predict strong performance in the coming quarter based on recent developments and market indicators.`,
@@ -24,7 +24,7 @@ const generateMockStockNews = (count: number): NewsItem[] => {
 export const fetchMarketNews = async (): Promise<NewsItem[]> => {
   try {
     const cryptoResponse = await fetch(
-      "https://min-api.cryptocompare.com/data/v2/news/?lang=EN&sortOrder=popular&limit=8"
+      "https://min-api.cryptocompare.com/data/v2/news/?lang=EN&sortOrder=popular&limit=6"
     );
     
     if (!cryptoResponse.ok) {

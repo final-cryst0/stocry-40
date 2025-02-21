@@ -23,30 +23,20 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
   const { toast } = useToast();
 
   const queryStackAI = async (data: any) => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        "https://api.stack-ai.com/inference/v0/run/29b2f1c6-2e20-4afb-83c8-afa5afe73a1c/67b85058e1500b3f2d600b8a",
-        {
-          headers: {
-            'Authorization': 'Bearer 59f6ba42-bde8-4bc2-8812-d764fd3eb299',
-            'Content-Type': 'application/json'
-          },
-          method: "POST",
-          body: JSON.stringify(data),
-        }
-      );
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      console.error('Error fetching analysis:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch analysis. Please try again.",
-        variant: "destructive",
-      });
-      throw error;
-    }
+    const response = await fetch(
+      "https://api.stack-ai.com/inference/v0/run/29b2f1c6-2e20-4afb-83c8-afa5afe73a1c/67b85058e1500b3f2d600b8a",
+      {
+        headers: {
+          'Authorization': 'Bearer 59f6ba42-bde8-4bc2-8812-d764fd3eb299',
+          'Content-Type': 'application/json'
+        },
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+    const result = await response.json();
+    console.log("API Response:", JSON.stringify(result)); // Debug log
+    return result;
   };
 
   const handleSymbolSubmit = async (e: React.FormEvent) => {
@@ -60,10 +50,16 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
           "user_id": "user_analysis",
           "in-0": `give analysis of ${symbol} stock`
         });
-        setAnalysisResult(response["out-0"]);
+        console.log("Setting analysis result:", response["out-0"]); // Debug log
+        setAnalysisResult(response["out-0"] || "No analysis available");
         onAnalysis('technical', symbol.toUpperCase());
       } catch (error) {
         console.error('Error:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch analysis. Please try again.",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
@@ -123,7 +119,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                   </div>
                 ) : (
-                  <p className="whitespace-pre-wrap">{analysisResult}</p>
+                  <pre className="whitespace-pre-wrap break-words">{analysisResult}</pre>
                 )}
               </div>
             </div>

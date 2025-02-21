@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BarChart3, Info, TrendingUp, Sparkles } from "lucide-react";
+import { useMarketStore } from "@/stores/marketStore";
 
 interface StockStatsProps {
   timeframe: number;
@@ -24,6 +25,17 @@ export function StockStats({
   isPriceUp,
   onAIAnalysis
 }: StockStatsProps) {
+  const { currency } = useMarketStore();
+  
+  const formatCurrency = (value: string) => {
+    const numericValue = parseFloat(value.replace(/[^0-9.-]+/g, ""));
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: currency,
+      maximumFractionDigits: 2,
+    }).format(currency === 'USD' ? numericValue / 83.12 : numericValue);
+  };
+
   return (
     <div className="space-y-4">
       <Card>
@@ -37,21 +49,21 @@ export function StockStats({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Current Price</p>
-              <p className="text-lg font-bold">{currentPrice}</p>
+              <p className="text-lg font-bold">{formatCurrency(currentPrice)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Price Change</p>
               <p className={`text-lg font-bold ${isPriceUp ? 'text-green-500' : 'text-red-500'}`}>
-                {priceChange} ({percentage.toFixed(2)}%)
+                {formatCurrency(priceChange)} ({percentage.toFixed(2)}%)
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Lowest Price</p>
-              <p className="text-lg font-bold">{lowestPrice}</p>
+              <p className="text-lg font-bold">{formatCurrency(lowestPrice)}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Highest Price</p>
-              <p className="text-lg font-bold">{highestPrice}</p>
+              <p className="text-lg font-bold">{formatCurrency(highestPrice)}</p>
             </div>
           </div>
         </CardContent>
@@ -66,11 +78,11 @@ export function StockStats({
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">24h Low</span>
-              <span className="font-medium">₹48,637.21</span>
+              <span className="font-medium">{formatCurrency("48637.21")}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">24h High</span>
-              <span className="font-medium">₹52,142.95</span>
+              <span className="font-medium">{formatCurrency("52142.95")}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">7d Change</span>

@@ -1,6 +1,7 @@
 
 import { ArrowDown, ArrowUp, Heart, Sparkles } from "lucide-react";
 import { Button } from "./ui/button";
+import { useMarketStore } from "@/stores/marketStore";
 
 interface CryptoCardProps {
   symbol: string;
@@ -25,12 +26,14 @@ export function CryptoCard({
   isFavorite = false,
   onFavoriteClick,
 }: CryptoCardProps) {
+  const { currency } = useMarketStore();
+
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
-      currency: "INR",
+      currency: currency,
       maximumFractionDigits: 2,
-    }).format(num);
+    }).format(currency === 'USD' ? num : num * 83.12); // Using approximate INR-USD conversion rate
   };
 
   if (isLoading) {

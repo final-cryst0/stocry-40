@@ -35,7 +35,9 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
       }
     );
     const result = await response.json();
-    console.log("API Response:", JSON.stringify(result)); // Debug log
+    if (!result.outputs || !result.outputs["out-0"]) {
+      throw new Error("Invalid API response format");
+    }
     return result;
   };
 
@@ -50,8 +52,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
           "user_id": "user_analysis",
           "in-0": `give analysis of ${symbol} stock`
         });
-        console.log("Setting analysis result:", response["out-0"]); // Debug log
-        setAnalysisResult(response["out-0"] || "No analysis available");
+        setAnalysisResult(response.outputs["out-0"]);
         onAnalysis('technical', symbol.toUpperCase());
       } catch (error) {
         console.error('Error:', error);
@@ -60,6 +61,7 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
           description: "Failed to fetch analysis. Please try again.",
           variant: "destructive",
         });
+        setAnalysisResult("No analysis available");
       } finally {
         setLoading(false);
       }

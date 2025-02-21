@@ -56,7 +56,6 @@ export function Navbar({ onCurrencyChange }: NavbarProps) {
         <h1 className="text-4xl font-bold text-center relative">
           <span className="text-primary">
             {displayText}
-            <span className="animate-pulse inline-block ml-[2px] -translate-y-[2px]">|</span>
           </span>
         </h1>
       </div>

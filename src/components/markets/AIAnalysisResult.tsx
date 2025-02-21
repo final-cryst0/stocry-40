@@ -1,15 +1,17 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Brain, TrendingUp, MessageCircle, LineChart } from "lucide-react";
+import { Brain, TrendingUp, MessageCircle, LineChart, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AIAnalysisResultProps {
   type: 'technical' | 'sentiment' | 'prediction';
   symbol: string;
+  onBack: () => void;
 }
 
-export function AIAnalysisResult({ type, symbol }: AIAnalysisResultProps) {
+export function AIAnalysisResult({ type, symbol, onBack }: AIAnalysisResultProps) {
   const { toast } = useToast();
 
   const getAnalysis = (type: string) => {
@@ -62,19 +64,27 @@ export function AIAnalysisResult({ type, symbol }: AIAnalysisResultProps) {
   const analysis = getAnalysis(type);
 
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <Card className="w-full bg-card text-card-foreground">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Button 
+          variant="ghost" 
+          className="mb-4"
+          onClick={onBack}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
         <CardTitle className="flex items-center gap-2">
           {analysis.icon}
           {analysis.title} for {symbol}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4">
+        <div className="grid gap-6">
           {analysis.data.map((item, index) => (
-            <div key={index} className="flex justify-between items-center border-b pb-2">
-              <span className="text-sm font-medium text-muted-foreground">{item.label}</span>
-              <span className="text-sm font-bold">{item.value}</span>
+            <div key={index} className="flex justify-between items-center border-b border-border pb-2">
+              <span className="text-lg font-medium text-muted-foreground">{item.label}</span>
+              <span className="text-lg font-bold">{item.value}</span>
             </div>
           ))}
         </div>

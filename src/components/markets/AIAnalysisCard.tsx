@@ -3,7 +3,9 @@ import { useState } from "react";
 import { Brain, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AIAnalysisResult } from "./AIAnalysisResult";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AIFeature {
   title: string;
@@ -20,6 +22,9 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
     type: 'technical' | 'sentiment' | 'prediction' | null;
     symbol: string;
   }>({ type: null, symbol: '' });
+  const [showCryptoInput, setShowCryptoInput] = useState(false);
+  const [cryptoSymbol, setCryptoSymbol] = useState('');
+  const { toast } = useToast();
 
   const features: AIFeature[] = [
     {
@@ -40,8 +45,27 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
   ];
 
   const handleAnalysisClick = (type: 'technical' | 'sentiment' | 'prediction') => {
-    setActiveAnalysis({ type, symbol: 'BTC' });
-    onAnalysis(type, 'BTC');
+    if (type === 'technical') {
+      setShowCryptoInput(true);
+    } else {
+      setActiveAnalysis({ type, symbol: 'BTC' });
+      onAnalysis(type, 'BTC');
+    }
+  };
+
+  const handleCryptoSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (cryptoSymbol) {
+      setShowCryptoInput(false);
+      setActiveAnalysis({ type: 'technical', symbol: cryptoSymbol.toUpperCase() });
+      onAnalysis('technical', cryptoSymbol.toUpperCase());
+    }
+  };
+
+  const handleBack = () => {
+    setActiveAnalysis({ type: null, symbol: '' });
+    setShowCryptoInput(false);
+    setCryptoSymbol('');
   };
 
   return (
@@ -56,31 +80,55 @@ export function AIAnalysisCard({ onAnalysis }: AIAnalysisCardProps) {
             Our advanced AI system analyzes market trends, technical indicators, and sentiment data to provide insights and predictions.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid md:grid-cols-3 gap-4">
-          {features.map((feature) => (
-            <div key={feature.type} className="flex flex-col gap-2">
-              <h3 className="font-semibold">{feature.title}</h3>
-              <p className="text-sm text-muted-foreground">{feature.description}</p>
-              <Button 
-                variant="outline" 
-                className="mt-2" 
-                onClick={() => handleAnalysisClick(feature.type)}
-              >
-                {feature.title === "Technical Analysis" ? "Analyze Patterns" :
-                feature.title === "Sentiment Analysis" ? "Check Sentiment" :
-                "View Predictions"} <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+        <CardContent>
+          {showCryptoInput ? (
+            <form onSubmit={handleCryptoSubmit} className="space-y-4">
+              <div className="flex flex-col space-y-2">
+                <label htmlFor="cryptoSymbol" className="text-sm font-medium">
+                  Enter Cryptocurrency Symbol (e.g., BTC, ETH)
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    id="cryptoSymbol"
+                    value={cryptoSymbol}
+                    onChange={(e) => setCryptoSymbol(e.target.value)}
+                    placeholder="Enter symbol..."
+                    className="flex-1"
+                  />
+                  <Button type="submit">Analyze</Button>
+                  <Button type="button" variant="outline" onClick={handleBack}>
+                    Back
+                  </Button>
+                </div>
+              </div>
+            </form>
+          ) : activeAnalysis.type ? (
+            <AIAnalysisResult 
+              type={activeAnalysis.type} 
+              symbol={activeAnalysis.symbol}
+              onBack={handleBack}
+            />
+          ) : (
+            <div className="grid md:grid-cols-3 gap-4">
+              {features.map((feature) => (
+                <div key={feature.type} className="flex flex-col gap-2">
+                  <h3 className="font-semibold">{feature.title}</h3>
+                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-2" 
+                    onClick={() => handleAnalysisClick(feature.type)}
+                  >
+                    {feature.title === "Technical Analysis" ? "Analyze Patterns" :
+                    feature.title === "Sentiment Analysis" ? "Check Sentiment" :
+                    "View Predictions"} <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </CardContent>
       </Card>
-
-      {activeAnalysis.type && (
-        <AIAnalysisResult 
-          type={activeAnalysis.type} 
-          symbol={activeAnalysis.symbol} 
-        />
-      )}
     </div>
   );
 }
